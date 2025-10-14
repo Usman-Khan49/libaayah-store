@@ -6,42 +6,56 @@ import {
   useAuth,
   useUser,
 } from "@clerk/clerk-react";
-import { db } from "../firebase";
-import { collection, addDoc } from "firebase/firestore";
+//import { db } from "../firebase";
+//import { collection, addDoc } from "firebase/firestore";
 import { useEffect } from "react";
+import ProductDemo from "../components/ProductDemo";
 
-async function addUser(User, cart) {
+async function syncUserToServer(sessionToken, cartID) {
   try {
-    const docReference = await addDoc(collection(db, "User"), {
-      userID: User.userId,
-      userEmail: User.email,
-      cartID: cart && cart.cartId ? cart.cartId : null,
+    console.log("Sending request to server...");
+    const res = await fetch("http://localhost:3001/api/syncUser", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ sessionToken, cartID }),
     });
-    console.log(
-      `The New User has been added to the collection: ${docReference.id}`
-    );
+
+    if (!res.ok) {
+      console.error("Server error:", res.status, await res.text());
+      return;
+    }
+
+    const data = await res.json();
+    console.log("User sync successful:", data);
   } catch (error) {
-    console.log(error);
+    console.error("Network error:", error);
   }
 }
 
 export default function HomePage() {
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, getToken } = useAuth();
   const { user } = useUser();
 
   useEffect(() => {
     if (!isSignedIn || !user) return;
 
-    const clerkUser = {
-      userId: user.id,
-      email:
-        user.primaryEmailAddress?.emailAddress ||
-        user.emailAddresses?.[0]?.emailAddress ||
-        null,
-    };
-    const cart = null;
-    addUser(clerkUser, cart);
-  }, [isSignedIn, user]);
+    (async () => {
+      try {
+        console.log("Getting JWT token...");
+        const token = await getToken();
+        if (!token) {
+          console.warn("NO Token is Available");
+          return;
+        }
+        console.log("Token obtained, syncing user...");
+        const cartID = null;
+        await syncUserToServer(token, cartID);
+      } catch (error) {
+        console.log("Clerk Token Not Found! Reason: " + error);
+      }
+    })();
+  }, [isSignedIn, user, getToken]);
   return (
     <>
       <header>
@@ -52,6 +66,12 @@ export default function HomePage() {
           <SignInButton></SignInButton>
         </SignedOut>
       </header>
+
+      <main>
+        <SignedIn>
+          <ProductDemo />
+        </SignedIn>
+      </main>
     </>
   );
 }
