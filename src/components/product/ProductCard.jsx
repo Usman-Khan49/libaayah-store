@@ -1,4 +1,4 @@
-import "./ProductCard.css";
+import "../../styles/components/ProductCard.css";
 
 const ProductCard = ({ product }) => {
   if (!product) {
@@ -15,7 +15,6 @@ const ProductCard = ({ product }) => {
   const firstImage = product.images?.edges?.[0]?.node;
   const firstVariant = product.variants?.edges?.[0]?.node;
   const price = firstVariant?.priceV2;
-  const comparePrice = firstVariant?.compareAtPriceV2;
 
   return (
     <div className="product-card">
@@ -48,12 +47,6 @@ const ProductCard = ({ product }) => {
               <span className="current-price">
                 {price.currencyCode} {price.amount}
               </span>
-              {comparePrice &&
-                parseFloat(comparePrice.amount) > parseFloat(price.amount) && (
-                  <span className="compare-price">
-                    {comparePrice.currencyCode} {comparePrice.amount}
-                  </span>
-                )}
             </>
           )}
         </div>

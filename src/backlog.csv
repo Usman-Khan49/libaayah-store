@@ -1,4 +1,0 @@
-Name,Description,Status,Priority,Assignees,Tags,Due Date,Acceptance Criteria,Area
-Product Catalog Modeling,"Define products, variants, SKUs, attributes and inventory mapping to Shopify",Open,High,dev@example.com,"backend,shopify",2025-11-01,"Products in Shopify reflect variants and inventory",Backend
-Product Grid UI,"Responsive product listing with filters and quick add-to-cart",Open,Medium,frontend@example.com,UI,2025-11-05,"Responsive grid, filtering works, add-to-cart adds item to cart",UI
-Checkout Integration,"Integrate headless flow with Shopify Checkout or Storefront API",Open,High,backend@example.com,backend,2025-11-10,"Checkout completes and creates Shopify order idempotently",Backend

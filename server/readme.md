@@ -23,6 +23,14 @@ Minimal backend to verify Clerk sessions and upsert user documents into Firestor
 
 Do NOT commit `.env` or the service account JSON to git.
 
+## Quick paste: Application default key (one-liner)
+
+```powershell
+$env:FIREBASE_SERVICE_ACCOUNT_PATH = 'C:\path\to\service-account.json'
+# or
+$env:GOOGLE_APPLICATION_CREDENTIALS = 'C:/Users/Usman/Downloads/ibaayah-e86c6-firebase-adminsdk-fbsvc-4c25acaa63.json'
+```
+
 ## Setup (PowerShell)
 
 ```powershell
