@@ -1,0 +1,58 @@
+.newsline{
+    display: flex;
+    justify-content: center;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    word-spacing: 0.2em;
+    background-color: #222020;
+    color: #fff;
+    padding: 0.75rem 0;
+    font-size: 0.85rem;
+}
+.hero{
+    background-image: url("../../assets/Another_Sample_hero_image.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    position: relative;
+}
+
+.headline {
+    position: absolute;
+    top: 40%;
+    left: 5%;
+    font-size: 4.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: #000;
+    max-width: 600px;
+}
+
+.headline span {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 400;
+    margin-top: 1rem;
+}
+
+.ctaBtn {
+    position: absolute;
+    top: 67%;
+    left: 5%;
+    background-color: #000;
+    color: #fff;
+    padding: 1rem 2.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    border: none;
+    width: fit-content;
+    transition: all 0.3s ease;
+}
+
+.ctaBtn:hover {
+    background-color: #333;
+    transform: translateY(-2px);
+}

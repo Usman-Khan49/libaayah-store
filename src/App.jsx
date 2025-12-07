@@ -18,7 +18,6 @@ export default function App() {
     <CartProvider>
       <Router>
         <div className="app">
-          <Header />
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/products" element={<ProductsPage />} />

@@ -10,7 +10,8 @@ import { Link } from "react-router-dom";
 //import { db } from "../firebase";
 //import { collection, addDoc } from "firebase/firestore";
 import { useEffect } from "react";
-import ProductDemo from "../components/ProductDemo";
+import { Header, Footer, ReelsSection } from "../components/layout";
+import "../styles/pages/HomePage.css";
 
 async function syncUserToServer(sessionToken, cartID) {
   try {
@@ -58,41 +59,21 @@ export default function HomePage() {
     })();
   }, [isSignedIn, user, getToken]);
   return (
-    <>
-      <header>
-        <SignedIn>
-          <UserButton></UserButton>
-        </SignedIn>
-        <SignedOut>
-          <SignInButton></SignInButton>
-        </SignedOut>
-      </header>
+    <div className="container">
+      <div className="newsline">Step into Winter 26 - 70% off Sale</div>
 
-      <main>
-        <div style={{ textAlign: "center", padding: "2rem" }}>
-          <h1>Welcome to Libaayah Store</h1>
-          <p>Discover our amazing collection of products</p>
-          <Link
-            to="/products"
-            style={{
-              display: "inline-block",
-              padding: "1rem 2rem",
-              backgroundColor: "#007bff",
-              color: "white",
-              textDecoration: "none",
-              borderRadius: "8px",
-              fontSize: "1.1rem",
-              margin: "1rem",
-            }}
-          >
-            Browse All Products
-          </Link>
+      <div className="hero">
+        <Header></Header>
+        <div className="headline">
+          Winter Sale
+          <span>Now 70% OFF</span>
         </div>
+        <div className="ctaBtn">SHOP NOW</div>
+      </div>
 
-        <SignedIn>
-          <ProductDemo />
-        </SignedIn>
-      </main>
-    </>
+      <ReelsSection />
+
+      <Footer />
+    </div>
   );
 }

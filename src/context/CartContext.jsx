@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, createContext } from "react";
 import { useUser } from "@clerk/clerk-react";
 import {
   createCart,
@@ -7,7 +7,9 @@ import {
   removeFromCart,
   getCart,
 } from "../lib/shopifyCart";
-import { CartContext } from "./cartContext";
+
+// Create Cart Context
+export const CartContext = createContext(null);
 
 // Cart Provider Component
 export const CartProvider = ({ children }) => {
