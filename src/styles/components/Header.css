@@ -1,8 +1,6 @@
 header {
     padding: 1rem 0;
-    position: sticky;
-    top:0;
-    z-index: 1;
+    position: relative;
 }
 
 .main-header {
@@ -97,9 +95,51 @@ header {
     color: #0f0f0f;
     text-transform: uppercase;
     font-weight: 500;
+    text-decoration: none;
 }
 
 .nav-item:hover {
     color: #666;
     transform: translateY(-1px);
+}
+
+a.nav-item {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Wishlist Icon */
+.wishlist-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.wishlist-link:hover {
+    opacity: 0.7;
+}
+
+.wishlist-icon {
+    width: 20px;
+    height: 20px;
+    color: #000;
+}
+
+.wishlist-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #000;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 2px 5px;
+    border-radius: 10px;
+    min-width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

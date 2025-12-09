@@ -10,7 +10,7 @@ import { Link } from "react-router-dom";
 //import { db } from "../firebase";
 //import { collection, addDoc } from "firebase/firestore";
 import { useEffect } from "react";
-import { Header, Footer, ReelsSection } from "../components/layout";
+import { Footer, ReelsSection, CarouselSection } from "../components/layout";
 import "../styles/pages/HomePage.css";
 
 async function syncUserToServer(sessionToken, cartID) {
@@ -63,14 +63,13 @@ export default function HomePage() {
       <div className="newsline">Step into Winter 26 - 70% off Sale</div>
 
       <div className="hero">
-        <Header></Header>
         <div className="headline">
           Winter Sale
           <span>Now 70% OFF</span>
         </div>
         <div className="ctaBtn">SHOP NOW</div>
       </div>
-
+      <CarouselSection title="New Arrivals" />
       <ReelsSection />
 
       <Footer />

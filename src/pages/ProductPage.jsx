@@ -1,64 +1,73 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
-import { getProduct } from "../lib/shopify";
+import { useParams } from "react-router-dom";
+import { getProduct, getAllProducts } from "../lib/shopify";
 import { useCart } from "../hooks/useCart";
+import ProductCard from "../components/product/ProductCard";
+import { Footer } from "../components/layout";
 import "../styles/pages/ProductPage.css";
 
 export default function ProductPage() {
   const { handle } = useParams();
-  const { addItem, loading: cartLoading } = useCart();
+  const { addItem } = useCart();
   const [product, setProduct] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selectedVariant, setSelectedVariant] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [quantity, setQuantity] = useState(1);
+  const [descriptionOpen, setDescriptionOpen] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
-  const [addToCartSuccess, setAddToCartSuccess] = useState(false);
+  const [addedToCart, setAddedToCart] = useState(false);
 
   useEffect(() => {
-    const fetchProduct = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
         const productData = await getProduct(handle);
+        const allProducts = await getAllProducts(8);
+
         if (productData) {
           setProduct(productData);
-          setSelectedVariant(productData.variants.edges[0]?.node || null);
-          setError(null);
-        } else {
-          setError("Product not found");
+          // Filter out current product from related products
+          setRelatedProducts(
+            allProducts.filter((p) => p.id !== productData.id).slice(0, 4)
+          );
         }
       } catch (err) {
         console.error("Error fetching product:", err);
-        setError("Failed to load product. Please try again.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProduct();
+    fetchData();
   }, [handle]);
+
+  const handleAddToCart = async () => {
+    if (!product) return;
+
+    const variant = product.variants.edges[0]?.node;
+    if (variant) {
+      try {
+        setAddingToCart(true);
+        await addItem(variant.id, quantity);
+        setAddedToCart(true);
+        setTimeout(() => setAddedToCart(false), 2000);
+      } catch (error) {
+        console.error("Failed to add to cart:", error);
+      } finally {
+        setAddingToCart(false);
+      }
+    }
+  };
+
+  const incrementQuantity = () => setQuantity((prev) => prev + 1);
+  const decrementQuantity = () =>
+    setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
   if (loading) {
     return (
       <div className="product-page-container">
-        <div className="loading">
-          <h2>Loading product...</h2>
-          <div className="spinner"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="product-page-container">
-        <div className="error">
-          <h2>Oops! Something went wrong</h2>
-          <p>{error}</p>
-          <Link to="/products" className="back-link">
-            ← Back to Products
-          </Link>
-        </div>
+        <div className="loading">Loading...</div>
       </div>
     );
   }
@@ -66,181 +75,125 @@ export default function ProductPage() {
   if (!product) {
     return (
       <div className="product-page-container">
-        <div className="error">
-          <h2>Product not found</h2>
-          <p>The product you're looking for doesn't exist.</p>
-          <Link to="/products" className="back-link">
-            ← Back to Products
-          </Link>
-        </div>
+        <div className="error">Product not found</div>
       </div>
     );
   }
 
-  const images = product.images.edges.map((edge) => edge.node);
-  const variants = product.variants.edges.map((edge) => edge.node);
-
-  const handleVariantChange = (variant) => {
-    setSelectedVariant(variant);
-  };
-
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: price.currencyCode,
-    }).format(parseFloat(price.amount));
-  };
-
-  const handleAddToCart = async () => {
-    if (!selectedVariant || !selectedVariant.availableForSale) {
-      return;
-    }
-
-    try {
-      setAddingToCart(true);
-      setAddToCartSuccess(false);
-
-      // Add item to cart using the variant ID
-      await addItem(selectedVariant.id, 1);
-
-      // Show success message
-      setAddToCartSuccess(true);
-
-      // Reset success message after 3 seconds
-      setTimeout(() => {
-        setAddToCartSuccess(false);
-      }, 3000);
-    } catch (err) {
-      console.error("Error adding to cart:", err);
-      alert("Failed to add item to cart. Please try again.");
-    } finally {
-      setAddingToCart(false);
-    }
-  };
+  const images = product.images?.edges || [];
+  const mainImage = images[selectedImage]?.node;
+  const price = product.variants.edges[0]?.node.price.amount;
 
   return (
     <div className="product-page-container">
-      <nav className="breadcrumb">
-        <Link to="/products">Products</Link>
-        <span className="separator">›</span>
-        <span>{product.title}</span>
-      </nav>
+      {/* Breadcrumb */}
+      <div className="breadcrumb">
+        <span className="breadcrumb-link">Home</span> /{" "}
+        <span className="breadcrumb-link">WOMEN</span> /{" "}
+        <span className="breadcrumb-link">3-Piece</span> /{" "}
+        <span className="breadcrumb-link">Embroidered Suit</span> /{" "}
+        <span className="breadcrumb-current">{product.handle}</span>
+      </div>
 
-      <div className="product-details">
-        <div className="product-images">
-          <div className="main-image">
-            {images.length > 0 ? (
+      <div className="product-detail-section">
+        {/* Left Side - Image Gallery */}
+        <div className="image-gallery">
+          <div className="thumbnail-list">
+            {images.map((img, index) => (
               <img
-                src={images[selectedImage]?.url}
-                alt={images[selectedImage]?.altText || product.title}
+                key={index}
+                src={img.node.url}
+                alt={`Thumbnail ${index + 1}`}
+                className={`thumbnail ${
+                  selectedImage === index ? "active" : ""
+                }`}
+                onClick={() => setSelectedImage(index)}
               />
-            ) : (
-              <div className="no-image">No image available</div>
-            )}
+            ))}
           </div>
-
-          {images.length > 1 && (
-            <div className="image-thumbnails">
-              {images.map((image, index) => (
-                <button
-                  key={index}
-                  className={`thumbnail ${
-                    selectedImage === index ? "active" : ""
-                  }`}
-                  onClick={() => setSelectedImage(index)}
-                >
-                  <img
-                    src={image.url}
-                    alt={image.altText || `Product ${index + 1}`}
-                  />
-                </button>
-              ))}
-            </div>
-          )}
+          <div className="main-image">
+            {mainImage && <img src={mainImage.url} alt={product.title} />}
+          </div>
         </div>
 
-        <div className="product-info">
+        {/* Right Side - Product Info */}
+        <div className="product-info-section">
           <h1 className="product-title">{product.title}</h1>
 
-          <div className="product-price">
-            {selectedVariant && (
-              <>
-                <span className="current-price">
-                  {formatPrice(selectedVariant.price)}
-                </span>
-                {selectedVariant.compareAtPrice && (
-                  <span className="compare-price">
-                    {formatPrice(selectedVariant.compareAtPrice)}
-                  </span>
-                )}
-              </>
-            )}
-          </div>
+          <div className="product-price">{`Rs.${price}`}</div>
 
-          <div className="product-description">
-            <p>{product.description}</p>
-          </div>
+          <div className="product-sku">SKU: {product.handle.toUpperCase()}</div>
 
-          {variants.length > 1 && (
-            <div className="product-variants">
-              <h3>Options:</h3>
-              <div className="variant-options">
-                {variants.map((variant) => (
-                  <button
-                    key={variant.id}
-                    className={`variant-option ${
-                      selectedVariant?.id === variant.id ? "active" : ""
-                    }`}
-                    onClick={() => handleVariantChange(variant)}
-                    disabled={!variant.availableForSale}
-                  >
-                    {variant.title}
-                    {!variant.availableForSale && " (Sold Out)"}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="product-actions">
-            <button
-              className="add-to-cart-btn"
-              disabled={
-                !selectedVariant?.availableForSale ||
-                addingToCart ||
-                cartLoading
-              }
-              onClick={handleAddToCart}
-            >
-              {addingToCart || cartLoading
-                ? "Adding..."
-                : addToCartSuccess
-                ? "Added to Cart ✓"
-                : selectedVariant?.availableForSale
-                ? "Add to Cart"
-                : "Sold Out"}
+          {/* Quantity Selector */}
+          <div className="quantity-section">
+            <button className="quantity-btn" onClick={decrementQuantity}>
+              -
             </button>
-            {addToCartSuccess && (
-              <p className="success-message">
-                Item added to cart successfully!
-              </p>
+            <input
+              type="number"
+              value={quantity}
+              readOnly
+              className="quantity-input"
+            />
+            <button className="quantity-btn" onClick={incrementQuantity}>
+              +
+            </button>
+          </div>
+
+          {/* Add to Cart Button */}
+          <button
+            className="add-to-cart-btn"
+            onClick={handleAddToCart}
+            disabled={addingToCart}
+          >
+            {addingToCart
+              ? "ADDING..."
+              : addedToCart
+              ? "ADDED TO CART ✓"
+              : "ADD TO CART"}
+          </button>
+
+          {/* Wishlist Button */}
+          <button className="wishlist-btn">
+            <span>♡</span>
+          </button>
+
+          {/* Description Accordion */}
+          <div className="description-accordion">
+            <button
+              className="accordion-header"
+              onClick={() => setDescriptionOpen(!descriptionOpen)}
+            >
+              <span>Description</span>
+              <span>{descriptionOpen ? "-" : "+"}</span>
+            </button>
+            {descriptionOpen && (
+              <div className="accordion-content">
+                {product.description || "No description available."}
+              </div>
             )}
           </div>
 
-          {product.tags.length > 0 && (
-            <div className="product-tags">
-              <h4>Tags:</h4>
-              <div className="tags">
-                {product.tags.map((tag, index) => (
-                  <span key={index} className="tag">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* Social Share */}
+          <div className="social-share">
+            <button className="social-btn facebook">f</button>
+            <button className="social-btn whatsapp">W</button>
+            <button className="social-btn email">✉</button>
+          </div>
         </div>
       </div>
+
+      {/* You May Also Like Section */}
+      <div className="related-products-section">
+        <h2 className="section-title">You May Also Like</h2>
+        <div className="related-products-grid">
+          {relatedProducts.map((relatedProduct) => (
+            <ProductCard key={relatedProduct.id} product={relatedProduct} />
+          ))}
+        </div>
+      </div>
+
+      <Footer />
     </div>
   );
 }
