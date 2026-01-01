@@ -7,8 +7,10 @@ import "../styles/pages/ProductsPage.css";
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filtersOpen, setFiltersOpen] = useState(false);
   const [sortBy, setSortBy] = useState("featured");
+  const [pageView, setPageView] = useState("grid");
+  const [sortOpen, setSortOpen] = useState(false);
+  const [pageViewOpen, setPageViewOpen] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -26,48 +28,116 @@ export default function ProductsPage() {
     fetchProducts();
   }, []);
 
+  const handleSortChange = (value) => {
+    setSortBy(value);
+    setSortOpen(false);
+  };
+
+  const handlePageViewChange = (value) => {
+    setPageView(value);
+    setPageViewOpen(false);
+  };
+
   if (loading) {
     return <div className="loading">Loading...</div>;
   }
 
   return (
     <div className="products-page">
-      {/* Page Title */}
-      <div className="page-title-section">
-        <h1 className="page-title">NEW IN</h1>
-      </div>
+      {/* Collection Header */}
+      <section className="collection-header">
+        <h1 className="collection-title">Unstitched Winter Collection</h1>
+      </section>
 
-      {/* Filters and Controls */}
-      <div className="controls-bar">
-        <div className="left-controls">
-          <button
-            className="control-btn"
-            onClick={() => setFiltersOpen(!filtersOpen)}
-          >
-            FILTERS <span className="arrow">{filtersOpen ? "▲" : "▼"}</span>
-          </button>
-          <button className="control-btn">
-            SORT BY <span className="arrow">▼</span>
+      {/* Toolbar */}
+      <div className="toolbar">
+        <div className="toolbar-left">
+          <button className="toolbar-btn filter-btn">
+            <span className="filter-icon">☰</span> Filter
           </button>
         </div>
 
-        <div className="center-info">
-          <span className="product-count">{products.length} Products</span>
+        <div className="toolbar-center">
+          <div className="dropdown-wrapper">
+            <button
+              className="toolbar-btn view-btn"
+              onClick={() => setPageViewOpen(!pageViewOpen)}
+            >
+              Page View
+              <span className={`chevron ${pageViewOpen ? "open" : ""}`}>▾</span>
+            </button>
+            {pageViewOpen && (
+              <div className="dropdown-menu view-menu">
+                <button
+                  className="dropdown-item"
+                  onClick={() => handlePageViewChange("grid")}
+                >
+                  4 Column
+                </button>
+                <button
+                  className="dropdown-item"
+                  onClick={() => handlePageViewChange("grid-3")}
+                >
+                  3 Column
+                </button>
+                <button
+                  className="dropdown-item"
+                  onClick={() => handlePageViewChange("grid-2")}
+                >
+                  2 Column
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="right-controls">
-          <button className="control-btn">
-            PAGE VIEW <span className="arrow">▼</span>
-          </button>
+        <div className="toolbar-right">
+          <div className="dropdown-wrapper">
+            <button
+              className="toolbar-btn sort-btn"
+              onClick={() => setSortOpen(!sortOpen)}
+            >
+              Sort By
+              <span className={`chevron ${sortOpen ? "open" : ""}`}>▾</span>
+            </button>
+            {sortOpen && (
+              <div className="dropdown-menu sort-menu">
+                <button
+                  className="dropdown-item"
+                  onClick={() => handleSortChange("featured")}
+                >
+                  Featured
+                </button>
+                <button
+                  className="dropdown-item"
+                  onClick={() => handleSortChange("newest")}
+                >
+                  Newest
+                </button>
+                <button
+                  className="dropdown-item"
+                  onClick={() => handleSortChange("price-low")}
+                >
+                  Price: Low to High
+                </button>
+                <button
+                  className="dropdown-item"
+                  onClick={() => handleSortChange("price-high")}
+                >
+                  Price: High to Low
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Products Grid */}
-      <div className="products-grid">
+      <section className={`product-grid product-grid-${pageView}`}>
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
-      </div>
+      </section>
 
       <Footer />
     </div>

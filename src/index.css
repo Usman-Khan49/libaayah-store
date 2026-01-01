@@ -16,8 +16,8 @@ html, body, #root { height: 100% }
 body {
   margin: 0;
   font-family: var(--font-body);
-  background: #fff;
-  color: #111;
+  background:#F9F9F9;
+  color: #2A2A2A;
 }
 
 

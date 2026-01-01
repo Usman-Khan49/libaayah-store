@@ -1,8 +1,8 @@
 .footer {
-  background-color: #1a1a1a;
-  color: #fff;
+  background-color: #8B2E3F;
+  color: #ffffff;
   padding: 4rem 0 0;
-  margin-top: 6rem;
+  margin-top: 32px;
 }
 
 .footer-content {
@@ -19,12 +19,44 @@
   flex-direction: column;
 }
 
+.footer-heading-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  color: inherit;
+}
+
 .footer-heading {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
   margin-bottom: 1.5rem;
-  text-transform: uppercase;
   letter-spacing: 0.05em;
+  text-align: left;
+  padding: 0;
+}
+
+.toggle-icon {
+  display: none;
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: #fff;
+  transition: transform 0.3s ease;
+}
+
+.toggle-icon.open {
+  transform: rotate(45deg);
+}
+
+.footer-section-content {
+  display: block;
+  overflow: hidden;
+  max-height: none;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
 }
 
 .footer-description {
@@ -84,7 +116,7 @@
 }
 
 .footer-links a {
-  color: #b0b0b0;
+  color: #ffff;
   text-decoration: none;
   font-size: 0.9rem;
   transition: color 0.2s;
@@ -96,7 +128,7 @@
 
 .newsletter-text {
   font-size: 0.9rem;
-  color: #b0b0b0;
+  color: #ffff;
   line-height: 1.5;
   margin-bottom: 1rem;
 }
@@ -122,7 +154,7 @@
 }
 
 .newsletter-input::placeholder {
-  color: #666;
+  color: #ffff;
 }
 
 .newsletter-btn {
@@ -183,8 +215,41 @@
 
 @media (max-width: 768px) {
   .footer-content {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2rem;
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .footer-section {
+    border-bottom: 1px solid #333;
+    padding: 1rem 0;
+  }
+
+  .footer-section:last-child {
+    border-bottom: none;
+  }
+
+  .footer-heading-btn {
+    cursor: pointer;
+    padding: 0.5rem 0;
+   
+  }
+
+
+  .toggle-icon {
+    display: block;
+  }
+
+  .footer-section-content {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+    transition: max-height 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease;
+  }
+
+  .footer-section-content.open {
+    max-height: 500px;
+    opacity: 1;
+    margin-top: 1rem;
   }
 
   .footer-bottom {
@@ -195,7 +260,19 @@
 }
 
 @media (max-width: 480px) {
+  .footer {
+    padding: 2rem 0 0;
+  }
+
   .footer-content {
-    grid-template-columns: 1fr;
+    padding: 0 1rem 2rem;
+  }
+
+  .newsletter-form {
+    flex-direction: column;
+  }
+
+  .newsletter-btn {
+    width: 100%;
   }
 }

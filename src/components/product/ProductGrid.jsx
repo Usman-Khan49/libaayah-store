@@ -1,18 +1,24 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { getAllProducts, getSearchProducts } from "../../lib/shopify";
 import ProductCard from "./ProductCard";
 import "../../styles/components/ProductGrid.css";
 
-export default function ProductGrid() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function ProductGrid({ products: propProducts }) {
+  const [products, setProducts] = useState(propProducts || []);
+  const [loading, setLoading] = useState(!propProducts);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
 
-  // Fetch all products on initial load
+  // If products are passed as props, use them (for homepage)
   useEffect(() => {
+    if (propProducts) {
+      setProducts(propProducts);
+      setLoading(false);
+      return;
+    }
+
+    // Otherwise, fetch all products on initial load (for products page)
     const fetchProducts = async () => {
       try {
         setLoading(true);
@@ -28,10 +34,12 @@ export default function ProductGrid() {
     };
 
     fetchProducts();
-  }, []);
+  }, [propProducts]);
 
   // Handle search with debouncing
   useEffect(() => {
+    if (propProducts) return; // Skip search if using prop products
+
     const wasSearching = isSearching;
 
     if (!searchQuery.trim()) {
@@ -131,13 +139,7 @@ export default function ProductGrid() {
 
       <div className="product-grid">
         {products.map((product) => (
-          <Link
-            key={product.id}
-            to={`/product/${product.handle}`}
-            className="product-link"
-          >
-            <ProductCard product={product} />
-          </Link>
+          <ProductCard key={product.id} product={product} />
         ))}
       </div>
 

@@ -3,6 +3,7 @@
   margin: 0 auto;
   padding: 2rem;
   min-height: 60vh;
+  background-color: transparent;
 }
 
 .order-detail-header {

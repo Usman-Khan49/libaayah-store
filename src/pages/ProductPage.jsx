@@ -2,13 +2,19 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { getProduct, getAllProducts } from "../lib/shopify";
 import { useCart } from "../hooks/useCart";
+import { useWishlist } from "../context/WishlistContext";
 import ProductCard from "../components/product/ProductCard";
 import { Footer } from "../components/layout";
 import "../styles/pages/ProductPage.css";
+import facebookIcon from "../assets/facebook.png";
+import instagramIcon from "../assets/instagram.png";
+import heartIcon from "../assets/heart.png";
+import heartEnabledIcon from "../assets/heartEnabled.png";
 
 export default function ProductPage() {
   const { handle } = useParams();
   const { addItem } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +33,6 @@ export default function ProductPage() {
 
         if (productData) {
           setProduct(productData);
-          // Filter out current product from related products
           setRelatedProducts(
             allProducts.filter((p) => p.id !== productData.id).slice(0, 4)
           );
@@ -60,6 +65,14 @@ export default function ProductPage() {
     }
   };
 
+  const handleWishlistToggle = () => {
+    if (isInWishlist(product.id)) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(product);
+    }
+  };
+
   const incrementQuantity = () => setQuantity((prev) => prev + 1);
   const decrementQuantity = () =>
     setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
@@ -81,117 +94,191 @@ export default function ProductPage() {
   }
 
   const images = product.images?.edges || [];
-  const mainImage = images[selectedImage]?.node;
   const price = product.variants.edges[0]?.node.price.amount;
+  const inWishlist = isInWishlist(product.id);
 
   return (
     <div className="product-page-container">
       {/* Breadcrumb */}
-      <div className="breadcrumb">
-        <span className="breadcrumb-link">Home</span> /{" "}
-        <span className="breadcrumb-link">WOMEN</span> /{" "}
-        <span className="breadcrumb-link">3-Piece</span> /{" "}
-        <span className="breadcrumb-link">Embroidered Suit</span> /{" "}
+      <nav className="breadcrumbs">
+        <span className="breadcrumb-link">Home</span> &gt;{" "}
+        <span className="breadcrumb-link">Trend Setters</span> &gt;{" "}
         <span className="breadcrumb-current">{product.handle}</span>
-      </div>
+      </nav>
 
-      <div className="product-detail-section">
-        {/* Left Side - Image Gallery */}
-        <div className="image-gallery">
-          <div className="thumbnail-list">
-            {images.map((img, index) => (
-              <img
-                key={index}
-                src={img.node.url}
-                alt={`Thumbnail ${index + 1}`}
-                className={`thumbnail ${
-                  selectedImage === index ? "active" : ""
-                }`}
-                onClick={() => setSelectedImage(index)}
-              />
-            ))}
+      {/* Main Product Section */}
+      <section className="product-main">
+        {/* Gallery Column - 2x2 Grid */}
+        <div className="gallery">
+          {/* Mobile Main Image */}
+          <div className="mobile-main-image">
+            <img
+              src={images[selectedImage]?.node.url || images[0]?.node.url}
+              alt={product.title}
+            />
           </div>
-          <div className="main-image">
-            {mainImage && <img src={mainImage.url} alt={product.title} />}
+
+          {/* Desktop Grid & Mobile Thumbnails */}
+          <div className="gallery-grid">
+            {images.map((img, index) => {
+              const isFirstImage = index === 0;
+              const remainingAfterFirst = images.length - 1;
+              const isLastAndOdd =
+                !isFirstImage &&
+                remainingAfterFirst % 2 !== 0 &&
+                index === images.length - 1;
+              return (
+                <div
+                  key={index}
+                  className={`gallery-image ${
+                    isFirstImage || isLastAndOdd ? "full-width" : ""
+                  } ${selectedImage === index ? "active" : ""}`}
+                  onClick={() => setSelectedImage(index)}
+                >
+                  <img
+                    src={img.node.url}
+                    alt={`${product.title} - Image ${index + 1}`}
+                  />
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Right Side - Product Info */}
-        <div className="product-info-section">
+        {/* Product Details Column */}
+        <div className="product-details">
           <h1 className="product-title">{product.title}</h1>
+          <p className="product-price">
+            Rs. {parseFloat(price).toLocaleString("en-PK")}
+          </p>
 
-          <div className="product-price">{`Rs.${price}`}</div>
+          <div className="divider"></div>
 
-          <div className="product-sku">SKU: {product.handle.toUpperCase()}</div>
-
-          {/* Quantity Selector */}
-          <div className="quantity-section">
-            <button className="quantity-btn" onClick={decrementQuantity}>
-              -
-            </button>
-            <input
-              type="number"
-              value={quantity}
-              readOnly
-              className="quantity-input"
-            />
-            <button className="quantity-btn" onClick={incrementQuantity}>
-              +
-            </button>
+          {/* Specs */}
+          <div className="specs-list">
+            <div className="spec-item">
+              <span className="spec-label">Color:</span>
+              <span className="spec-value">Beige</span>
+            </div>
+            <div className="spec-item">
+              <span className="spec-label">Fabric of Saree:</span>
+              <span className="spec-value">Maysuri</span>
+            </div>
+            <div className="spec-item">
+              <span className="spec-label">Fabric of Blouse:</span>
+              <span className="spec-value">Raw Silk</span>
+            </div>
           </div>
 
-          {/* Add to Cart Button */}
+          <div className="divider"></div>
+
+          {/* Actions Row */}
+          <div className="actions-row">
+            <div className="quantity-selector">
+              <button className="qty-btn" onClick={decrementQuantity}>
+                −
+              </button>
+              <span className="qty-value">{quantity}</span>
+              <button className="qty-btn" onClick={incrementQuantity}>
+                +
+              </button>
+            </div>
+            {/* Add to Cart Button */}
+            <button
+              className="add-to-cart-button"
+              onClick={handleAddToCart}
+              disabled={addingToCart}
+            >
+              {addingToCart
+                ? "Adding..."
+                : addedToCart
+                ? "Added to Cart ✓"
+                : "Add to Cart"}
+            </button>
+            <button
+              className={`wishlist-button ${inWishlist ? "active" : ""}`}
+              onClick={handleWishlistToggle}
+            >
+              <img
+                src={inWishlist ? heartEnabledIcon : heartIcon}
+                alt="Wishlist"
+              />
+            </button>
+          </div>
           <button
-            className="add-to-cart-btn"
+            className="Buy-Now-Btn"
             onClick={handleAddToCart}
             disabled={addingToCart}
           >
             {addingToCart
-              ? "ADDING..."
+              ? "Processing..."
               : addedToCart
-              ? "ADDED TO CART ✓"
-              : "ADD TO CART"}
+              ? "Added to Cart ✓"
+              : "Buy Now"}
           </button>
+          {/* Shipping Info Box */}
+          <div className="shipping-info-box">
+            <span className="truck-icon">🚚</span>
+            <span>
+              Get it between Saturday January 3rd - Monday January 5th
+            </span>
+          </div>
 
-          {/* Wishlist Button */}
-          <button className="wishlist-btn">
-            <span>♡</span>
-          </button>
-
-          {/* Description Accordion */}
-          <div className="description-accordion">
+          {/* Accordion */}
+          <div className="accordion">
             <button
               className="accordion-header"
               onClick={() => setDescriptionOpen(!descriptionOpen)}
             >
-              <span>Description</span>
-              <span>{descriptionOpen ? "-" : "+"}</span>
+              <span>Detailed Description</span>
+              <span className="accordion-icon">
+                {descriptionOpen ? "−" : "+"}
+              </span>
             </button>
             {descriptionOpen && (
               <div className="accordion-content">
-                {product.description || "No description available."}
+                <p>{product.description || "No description available."}</p>
               </div>
             )}
           </div>
 
-          {/* Social Share */}
-          <div className="social-share">
-            <button className="social-btn facebook">f</button>
-            <button className="social-btn whatsapp">W</button>
-            <button className="social-btn email">✉</button>
+          {/* Footer Details */}
+          <div className="footer-details">
+            <div className="social-icons">
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="social-icon"
+              >
+                <img src={facebookIcon} alt="Facebook" />
+              </a>
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="social-icon"
+              >
+                <img src={instagramIcon} alt="Instagram" />
+              </a>
+            </div>
+            <p className="disclaimer">
+              Disclaimer: These Images Are For Illustrative Purposes, Actual
+              Color Of the Product May Slight Vary.
+            </p>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* You May Also Like Section */}
-      <div className="related-products-section">
-        <h2 className="section-title">You May Also Like</h2>
-        <div className="related-products-grid">
+      {/* Similar Products Section */}
+      <section className="related">
+        <h2 className="related-heading">Similar Products</h2>
+        <div className="related-grid">
           {relatedProducts.map((relatedProduct) => (
             <ProductCard key={relatedProduct.id} product={relatedProduct} />
           ))}
         </div>
-      </div>
+      </section>
 
       <Footer />
     </div>

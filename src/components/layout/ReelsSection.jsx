@@ -5,8 +5,10 @@ export default function ReelsSection() {
   const [selectedReel, setSelectedReel] = useState(null);
   const [isMuted, setIsMuted] = useState(true);
   const [progress, setProgress] = useState(0);
+  const [focusedIndex, setFocusedIndex] = useState(0);
   const videoRefs = useRef([]);
   const modalVideoRef = useRef(null);
+  const containerRef = useRef(null);
 
   // Auto-play videos when component mounts
   useEffect(() => {
@@ -17,6 +19,39 @@ export default function ReelsSection() {
         });
       }
     });
+  }, []);
+
+  // Handle scroll to update focused card on mobile
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const containerRect = container.getBoundingClientRect();
+      const centerX = containerRect.left + containerRect.width / 2;
+
+      const cards = container.querySelectorAll(".reel-card");
+      let closestIndex = 0;
+      let closestDistance = Infinity;
+
+      cards.forEach((card, index) => {
+        const cardRect = card.getBoundingClientRect();
+        const cardCenterX = cardRect.left + cardRect.width / 2;
+        const distance = Math.abs(centerX - cardCenterX);
+
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestIndex = index;
+        }
+      });
+
+      setFocusedIndex(closestIndex);
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    handleScroll(); // Initial call
+
+    return () => container.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Update progress bar
@@ -106,11 +141,11 @@ export default function ReelsSection() {
     <section className="reels-section">
       <h2 className="reels-title">Watch. Shop!</h2>
 
-      <div className="reels-container">
+      <div className="reels-container" ref={containerRef}>
         {reels.map((reel, index) => (
           <div
             key={reel.id}
-            className="reel-card"
+            className={`reel-card ${index === focusedIndex ? "focused" : ""}`}
             onClick={(e) => handleVideoClick(e, index)}
           >
             <div className="reel-video-wrapper">

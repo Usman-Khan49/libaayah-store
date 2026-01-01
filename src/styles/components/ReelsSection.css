@@ -1,23 +1,28 @@
 .reels-section {
-  padding: 5rem 0;
-  background-color: #fff;
+  padding: 16px 0;
+  background-color: transparent;
+  overflow: hidden;
 }
 
 .reels-title {
   text-align: center;
-  font-size: 3rem;
+  font-size: 2.5rem;
   font-weight: 700;
-  margin-bottom: 3rem;
+  margin-bottom: 1rem;
+  margin-top: 0;
   color: #000;
+  font-family: var(--font-heading);
 }
 
 .reels-container {
   display: flex;
   gap: 1.5rem;
   overflow-x: auto;
-  padding: 0 2rem 2rem;
+  overflow-y: visible;
+  padding: 1rem 2rem;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
 }
 
 .reels-container::-webkit-scrollbar {
@@ -40,19 +45,21 @@
 
 .reel-card {
   flex-shrink: 0;
-  width: 250px;
-  height: 400px;
+  width: 195px;
+  height: 340px;
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
   position: relative;
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  scroll-snap-align: start;
 }
 
 .reel-card:hover {
-  transform: scale(110%);
+  transform: scale(1.1);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 10;
 }
 
 .reel-video-wrapper {
@@ -357,18 +364,49 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .reels-section {
+    padding: 32px 0;
+  }
+
   .reels-title {
     font-size: 2rem;
     margin-bottom: 2rem;
   }
 
-  .reel-card {
-    width: 220px;
-    height: 400px;
+  .reels-container {
+    padding: 2rem 0 2rem;
+    gap: 1rem;
+    scroll-snap-type: x mandatory;
+    padding-left: calc(50vw - 97.5px);
+    padding-right: calc(50vw - 97.5px);
+    overflow-y: visible;
+  }
+
+  .reels-container::-webkit-scrollbar {
+    display: none;
   }
 
   .reels-container {
-    padding: 0 1rem 1rem;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .reel-card {
+    width: 195px;
+    height: 340px;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+    transition: transform 0.3s ease;
+    transform: scale(0.9);
+  }
+
+  .reel-card:hover {
+    transform: scale(0.9);
+  }
+
+  /* Center focused card scaling */
+  .reel-card.focused {
+    transform: scale(1.1);
   }
 
   .reel-modal-nav {

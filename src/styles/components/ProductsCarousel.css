@@ -1,0 +1,78 @@
+/* ========================================
+   Products Carousel Styles
+   ======================================== */
+
+.products-carousel-section {
+  padding: 32px 64px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.products-carousel-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.products-carousel-container {
+  width: 100%;
+  overflow: hidden;
+}
+
+.products-carousel-track {
+  display: flex;
+  gap: 32px;
+  transition: transform 0.5s ease;
+}
+
+.product-carousel-item {
+  flex: 0 0 calc((100% - 96px) / 4);
+  min-width: 0;
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+@media (max-width: 1024px) {
+  .products-carousel-section {
+    padding: 32px;
+  }
+
+  .products-carousel-track {
+    gap: 24px;
+  }
+
+  .product-carousel-item {
+    flex: 0 0 calc((100% - 48px) / 3);
+  }
+}
+
+@media (max-width: 768px) {
+  .products-carousel-section {
+    padding: 16px;
+  }
+
+  .products-carousel-wrapper {
+    gap: 8px;
+  }
+
+  .products-carousel-track {
+    gap: 16px;
+  }
+
+  .product-carousel-item {
+    flex: 0 0 calc((100% - 16px) / 2);
+  }
+}
+
+@media (max-width: 480px) {
+  .products-carousel-track {
+    gap: 12px;
+  }
+
+  .product-carousel-item {
+    flex: 0 0 calc((100% - 12px) / 2);
+  }
+}
