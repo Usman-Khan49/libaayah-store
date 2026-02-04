@@ -3,8 +3,7 @@
 
 :root { 
   box-sizing: border-box; 
-  --font-primary: 'Playfair Display', serif;
-  --font-secondary: 'Poppins', sans-serif;
+
   --font-heading: 'Playfair Display', serif;
   --font-body: 'Poppins', sans-serif;
 }

@@ -44,19 +44,19 @@ export default function Header() {
         {/* Center Section */}
         <nav className="header-center">
           <Link to="/products" className="nav-link desktop-only">
-            New In
+            Unstitched
           </Link>
           <Link to="/products" className="nav-link desktop-only">
-            Unstitched
+            Winter Collection
           </Link>
           <Link to="/" className="logo-link">
             <img src={logoImg} alt="Libaayah" className="logo-img" />
           </Link>
           <Link to="/products" className="nav-link desktop-only">
-            Seasonal
+            Summer Collection
           </Link>
           <Link to="/products" className="nav-link sale desktop-only">
-            Sale
+            Sale!
           </Link>
         </nav>
 
@@ -77,53 +77,61 @@ export default function Header() {
       {/* Mobile Menu */}
       <div className={`mobile-menu ${menuOpen ? "open" : ""}`}>
         <div className="mobile-menu-content">
+
+          <div className="mobile-menu-heading">Menu</div>
           {/* Search Bar */}
-          <div className="mobile-search">
+          {/* <div className="mobile-search">
             <img src={searchIcon} alt="Search" className="search-icon" />
             <input
               type="text"
               placeholder="Search..."
               className="search-input"
             />
-          </div>
+          </div> */}
 
           {/* Navigation Links */}
           <nav className="mobile-nav">
             <Link
               to="/products"
-              className="mobile-nav-link"
-              onClick={toggleMenu}
-            >
-              New In
-            </Link>
-            <Link
-              to="/products"
-              className="mobile-nav-link"
-              onClick={toggleMenu}
-            >
-              Unstitched
-            </Link>
-            <Link
-              to="/products"
-              className="mobile-nav-link"
-              onClick={toggleMenu}
-            >
-              Seasonal
-            </Link>
-            <Link
-              to="/products"
               className="mobile-nav-link sale"
               onClick={toggleMenu}
             >
-              Sale
+              Winter Sale!
             </Link>
-          </nav>
-
-          {/* Profile Button */}
-          <button className="mobile-profile-btn" aria-label="User Profile">
+            <Link
+              to="/products"
+              className="mobile-nav-link"
+              onClick={toggleMenu}
+            >
+              Unstitched Collection
+            </Link>
+            <Link
+              to="/products"
+              className="mobile-nav-link"
+              onClick={toggleMenu}
+            >
+              Winter Collection
+            </Link>
+            <Link
+              to="/products"
+              className="mobile-nav-link"
+              onClick={toggleMenu}
+            >
+              Summer Collection
+            </Link>
+            <button className="mobile-profile-btn" aria-label="User Profile">
             <img src={userIcon} alt="User" />
             <span>My Account</span>
           </button>
+            <div className="mobile-nav-link nav-contact">
+              <p>Need Help?</p>
+              <p>043-2535241</p>
+              <p>libaayahcontact@example.com</p>
+            </div>
+          </nav>
+
+          {/* Profile Button */}
+          
         </div>
       </div>
 

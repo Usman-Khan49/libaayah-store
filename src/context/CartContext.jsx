@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, createContext } from "react";
+import { useState, useEffect, useCallback, createContext, useRef } from "react";
 import { useUser } from "@clerk/clerk-react";
 import {
   createCart,
@@ -21,6 +21,10 @@ export const CartProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [previousAuthState, setPreviousAuthState] = useState(isSignedIn);
+  
+  // Debounce timer refs for quantity updates
+  const updateTimers = useRef({});
+  const pendingUpdates = useRef({});
 
   // Load cart from Shopify
   const loadCart = useCallback(
@@ -198,28 +202,73 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // Update cart line quantity
+  // Update cart line quantity with optimistic updates and debouncing
   const updateItem = async (lineId, quantity) => {
-    if (!cartId) return;
+    if (!cartId || !cart) return;
 
-    try {
-      setLoading(true);
-      setError(null);
-
-      if (quantity <= 0) {
-        // Remove item if quantity is 0 or less
-        await removeItem([lineId]);
-      } else {
-        const updatedCart = await updateCartLine(cartId, lineId, quantity);
-        setCart(updatedCart);
-      }
-    } catch (err) {
-      console.error("Error updating cart item:", err);
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
+    // Clear existing timer for this line
+    if (updateTimers.current[lineId]) {
+      clearTimeout(updateTimers.current[lineId]);
     }
+
+    // Optimistic update - update UI immediately
+    setCart((prevCart) => {
+      if (!prevCart) return prevCart;
+      
+      const updatedLines = prevCart.lines.edges.map((edge) => {
+        if (edge.node.id === lineId) {
+          return {
+            ...edge,
+            node: {
+              ...edge.node,
+              quantity: quantity,
+            },
+          };
+        }
+        return edge;
+      });
+
+      return {
+        ...prevCart,
+        lines: {
+          ...prevCart.lines,
+          edges: updatedLines,
+        },
+      };
+    });
+
+    // Store pending update
+    pendingUpdates.current[lineId] = quantity;
+
+    // Debounce the actual API call
+    updateTimers.current[lineId] = setTimeout(async () => {
+      try {
+        setError(null);
+        
+        const finalQuantity = pendingUpdates.current[lineId];
+        
+        if (finalQuantity <= 0) {
+          // Remove item if quantity is 0 or less
+          await removeItem([lineId]);
+        } else {
+          const updatedCart = await updateCartLine(cartId, lineId, finalQuantity);
+          setCart(updatedCart);
+        }
+        
+        // Clear pending update
+        delete pendingUpdates.current[lineId];
+        delete updateTimers.current[lineId];
+      } catch (err) {
+        console.error("Error updating cart item:", err);
+        setError(err.message);
+        
+        // Revert optimistic update on error - reload cart
+        await loadCart(cartId);
+        
+        delete pendingUpdates.current[lineId];
+        delete updateTimers.current[lineId];
+      }
+    }, 500); // Wait 500ms after last change before sending to API
   };
 
   // Remove items from cart
