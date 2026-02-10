@@ -3,7 +3,7 @@ import { Footer } from "../components/layout";
 import "../styles/pages/CartPage.css";
 
 export default function CartPage() {
-  const { cart, updateItem, removeItem, loading } = useCart();
+  const { cart, updateItem, removeItem, checkout, loading } = useCart();
 
   const items = cart?.lines?.edges || [];
 
@@ -117,23 +117,33 @@ export default function CartPage() {
             {/* Order Summary Section */}
             <div className="order-summary">
               <h2 className="summary-title">ORDER SUMMARY</h2>
-              
+
               <div className="summary-row">
                 <span className="summary-label">SUBTOTAL</span>
-                <span className="summary-value">{subtotal.toLocaleString("en-PK")},00 Rs.</span>
+                <span className="summary-value">
+                  {subtotal.toLocaleString("en-PK")},00 Rs.
+                </span>
               </div>
-              
+
               <div className="summary-row">
                 <span className="summary-label">SHIPPING</span>
                 <span className="summary-value">Free</span>
               </div>
-              
+
               <div className="summary-row summary-total">
                 <span className="summary-label">TOTAL</span>
-                <span className="summary-value">{subtotal.toLocaleString("en-PK")},00 Rs.</span>
+                <span className="summary-value">
+                  {subtotal.toLocaleString("en-PK")},00 Rs.
+                </span>
               </div>
-              
-              <button className="checkout-btn">Check Out</button>
+
+              <button
+                className="checkout-btn"
+                onClick={checkout}
+                disabled={!cart?.checkoutUrl}
+              >
+                Check Out
+              </button>
             </div>
           </>
         )}

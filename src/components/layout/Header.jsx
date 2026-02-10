@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useWishlist } from "../../context/WishlistContext";
+import { useAuth } from "../../context/AuthContext";
+import { useCart } from "../../hooks/useCart";
 import "../../styles/components/Header.css";
 import logoImg from "../../assets/Logo.png";
 import searchIcon from "../../assets/search.png";
@@ -10,7 +12,10 @@ import cartIcon from "../../assets/cart.png";
 
 export default function Header() {
   const { getWishlistCount } = useWishlist();
+  const { isAuthenticated } = useAuth();
+  const { getCartItemCount } = useCart();
   const wishlistCount = getWishlistCount();
+  const cartCount = getCartItemCount();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleMenu = () => {
@@ -25,9 +30,13 @@ export default function Header() {
           <button className="icon-btn" aria-label="Search">
             <img src={searchIcon} alt="Search" />
           </button>
-          <button className="icon-btn" aria-label="User Profile">
+          <Link
+            to={isAuthenticated ? "/account" : "/login"}
+            className="icon-btn"
+            aria-label="User Profile"
+          >
             <img src={userIcon} alt="User" />
-          </button>
+          </Link>
         </div>
 
         {/* Hamburger Menu - Mobile */}
@@ -70,6 +79,7 @@ export default function Header() {
           </Link>
           <Link to="/cart" className="icon-btn" aria-label="Shopping Bag">
             <img src={cartIcon} alt="Cart" />
+            {cartCount > 0 && <span className="icon-badge">{cartCount}</span>}
           </Link>
         </div>
       </div>
@@ -77,7 +87,6 @@ export default function Header() {
       {/* Mobile Menu */}
       <div className={`mobile-menu ${menuOpen ? "open" : ""}`}>
         <div className="mobile-menu-content">
-
           <div className="mobile-menu-heading">Menu</div>
           {/* Search Bar */}
           {/* <div className="mobile-search">
@@ -119,10 +128,14 @@ export default function Header() {
             >
               Summer Collection
             </Link>
-            <button className="mobile-profile-btn" aria-label="User Profile">
-            <img src={userIcon} alt="User" />
-            <span>My Account</span>
-          </button>
+            <Link
+              to={isAuthenticated ? "/account" : "/login"}
+              className="mobile-profile-btn"
+              onClick={toggleMenu}
+            >
+              <img src={userIcon} alt="User" />
+              <span>{isAuthenticated ? "My Account" : "Sign In"}</span>
+            </Link>
             <div className="mobile-nav-link nav-contact">
               <p>Need Help?</p>
               <p>043-2535241</p>
@@ -131,7 +144,6 @@ export default function Header() {
           </nav>
 
           {/* Profile Button */}
-          
         </div>
       </div>
 

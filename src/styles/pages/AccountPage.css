@@ -1,0 +1,148 @@
+.account-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding-top: 80px;
+}
+
+.account-container {
+  flex: 1;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 60px 20px;
+  width: 100%;
+}
+
+.account-loading {
+  text-align: center;
+  color: #777;
+  padding: 60px 0;
+}
+
+.account-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.account-title {
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.logout-btn {
+  padding: 10px 20px;
+  background: transparent;
+  color: #000;
+  border: 1px solid #000;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.logout-btn:hover {
+  background: #000;
+  color: #fff;
+}
+
+.account-section {
+  margin-bottom: 36px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.info-item {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+}
+
+.info-label {
+  font-size: 13px;
+  color: #888;
+  letter-spacing: 0.5px;
+  min-width: 80px;
+}
+
+.info-value {
+  font-size: 15px;
+  color: #222;
+}
+
+.address-box {
+  padding: 16px;
+  background: #f9f9f9;
+  border: 1px solid #eee;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #444;
+}
+
+.quick-links {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #eee;
+}
+
+.quick-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  text-decoration: none;
+  color: #222;
+  font-size: 15px;
+  transition: background 0.15s;
+  border-bottom: 1px solid #eee;
+}
+
+.quick-link:last-child {
+  border-bottom: none;
+}
+
+.quick-link:hover {
+  background: #f5f5f5;
+}
+
+.quick-link .arrow {
+  color: #999;
+  font-size: 18px;
+}
+
+@media (max-width: 600px) {
+  .account-container {
+    padding: 40px 16px;
+  }
+
+  .account-title {
+    font-size: 22px;
+  }
+
+  .account-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+}

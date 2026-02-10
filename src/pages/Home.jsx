@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { useAuth, useUser } from "@clerk/clerk-react";
 import { getAllProducts } from "../lib/shopify";
 import { Footer } from "../components/layout";
 import ReelsSection from "../components/layout/ReelsSection";
@@ -14,54 +13,10 @@ import summerImg from "../assets/img109.jpg";
 import saleImg from "../assets/img127.jpg";
 import "../styles/pages/HomePage.css";
 
-async function syncUserToServer(sessionToken, cartID) {
-  try {
-    console.log("Sending request to server...");
-    const res = await fetch("http://localhost:3001/api/syncUser", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ sessionToken, cartID }),
-    });
-
-    if (!res.ok) {
-      console.error("Server error:", res.status, await res.text());
-      return;
-    }
-
-    const data = await res.json();
-    console.log("User sync successful:", data);
-  } catch (error) {
-    console.error("Network error:", error);
-  }
-}
-
 export default function HomePage() {
-  const { isSignedIn, getToken } = useAuth();
-  const { user } = useUser();
   const [products, setProducts] = useState([]);
   const heroVideoRef = useRef(null);
   const bottomVideoRef = useRef(null);
-
-  useEffect(() => {
-    if (!isSignedIn || !user) return;
-
-    (async () => {
-      try {
-        console.log("Getting JWT token...");
-        const token = await getToken();
-        if (!token) {
-          console.warn("NO Token is Available");
-          return;
-        }
-        console.log("Token obtained, syncing user...");
-        const cartID = null;
-        await syncUserToServer(token, cartID);
-      } catch (error) {
-        console.log("Clerk Token Not Found! Reason: " + error);
-      }
-    })();
-  }, [isSignedIn, user, getToken]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -94,7 +49,7 @@ export default function HomePage() {
           }
         });
       },
-      { threshold: 0.25 }
+      { threshold: 0.25 },
     );
 
     if (heroVideo) observer.observe(heroVideo);

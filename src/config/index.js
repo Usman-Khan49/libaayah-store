@@ -1,20 +1,15 @@
 // App Configuration
 export const APP_CONFIG = {
   name: "Libaayah Store",
-  currency: "USD",
-  locale: "en-US",
+  currency: "PKR",
+  locale: "en-PK",
 };
 
 // API Configuration
 export const API_CONFIG = {
-  serverUrl: import.meta.env.VITE_SERVER_URL || "http://localhost:3001",
   shopifyStorefrontUrl: import.meta.env.VITE_SHOPIFY_STOREFRONT_URL,
   shopifyStorefrontToken: import.meta.env.VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN,
-};
-
-// Clerk Configuration
-export const CLERK_CONFIG = {
-  publishableKey: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
+  serverUrl: import.meta.env.VITE_SERVER_URL || "http://localhost:3001",
 };
 
 // Routes
@@ -28,6 +23,8 @@ export const ROUTES = {
   CONTACT: "/contact",
   FAQ: "/faq",
   ACCOUNT: "/account",
+  LOGIN: "/login",
+  REGISTER: "/register",
   SEARCH: "/search",
 };
 

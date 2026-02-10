@@ -1,5 +1,5 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useState, useEffect, useCallback, createContext, useRef } from "react";
-import { useUser } from "@clerk/clerk-react";
 import {
   createCart,
   addToCart,
@@ -11,157 +11,60 @@ import {
 // Create Cart Context
 export const CartContext = createContext(null);
 
+const CART_ID_KEY = "shopify_cart_id";
+
 // Cart Provider Component
 export const CartProvider = ({ children }) => {
-  const { user, isSignedIn } = useUser();
-
   // State
   const [cart, setCart] = useState(null);
   const [cartId, setCartId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [previousAuthState, setPreviousAuthState] = useState(isSignedIn);
-  
+
   // Debounce timer refs for quantity updates
   const updateTimers = useRef({});
   const pendingUpdates = useRef({});
 
   // Load cart from Shopify
-  const loadCart = useCallback(
-    async (id) => {
-      if (!id) return;
+  const loadCart = useCallback(async (id) => {
+    if (!id) return;
 
-      try {
-        setLoading(true);
-        const cartData = await getCart(id);
-        setCart(cartData);
-        setError(null);
-      } catch (err) {
-        console.error("Error loading cart:", err);
-        setError(err.message);
-        // If cart not found, clear the stored ID
-        if (err.message.includes("not found")) {
-          setCartId(null);
-          setCart(null);
-          if (isSignedIn && user) {
-            await deleteCartIdFromFirestore(user.id);
-          } else {
-            localStorage.removeItem("shopify_cart_id");
-          }
-        }
-      } finally {
-        setLoading(false);
+    try {
+      setLoading(true);
+      const cartData = await getCart(id);
+      setCart(cartData);
+      setError(null);
+    } catch (err) {
+      console.error("Error loading cart:", err);
+      setError(err.message);
+      // If cart not found, clear the stored ID
+      if (err.message?.includes("not found") || !err.message) {
+        setCartId(null);
+        setCart(null);
+        localStorage.removeItem(CART_ID_KEY);
       }
-    },
-    [isSignedIn, user]
-  );
-
-  // Load cart ID from storage on mount
-  useEffect(() => {
-    const loadCartId = async () => {
-      try {
-        if (isSignedIn && user) {
-          // Authenticated user - load cart ID from Firestore
-          console.log("Loading cart for authenticated user:", user.id);
-          const storedCartId = await getCartIdFromFirestore(user.id);
-          if (storedCartId) {
-            console.log("Found cart in Firestore:", storedCartId);
-            setCartId(storedCartId);
-            await loadCart(storedCartId);
-          } else {
-            console.log("No cart found in Firestore");
-          }
-        } else {
-          // Guest user - load cart ID from localStorage
-          console.log("Loading cart for guest user from localStorage");
-          const storedCartId = localStorage.getItem("shopify_cart_id");
-          if (storedCartId) {
-            console.log("Found cart in localStorage:", storedCartId);
-            setCartId(storedCartId);
-            await loadCart(storedCartId);
-          } else {
-            console.log("No cart found in localStorage");
-          }
-        }
-      } catch (err) {
-        console.error("Error loading cart:", err);
-        setError(err.message);
-      }
-    };
-
-    loadCartId();
-  }, [isSignedIn, user, loadCart]);
-
-  // Handle auth state changes (login/logout)
-  useEffect(() => {
-    const handleAuthChange = async () => {
-      // User just logged in (was guest, now authenticated)
-      if (isSignedIn && user && !previousAuthState) {
-        console.log("User logged in - migrating cart");
-        const guestCartId = localStorage.getItem("shopify_cart_id");
-        const firestoreCartId = await getCartIdFromFirestore(user.id);
-
-        if (guestCartId && !firestoreCartId) {
-          // Guest had cart, authenticated user doesn't - save guest cart to Firestore
-          console.log("Saving guest cart to Firestore");
-          await saveCartIdToFirestore(user.id, guestCartId);
-          localStorage.removeItem("shopify_cart_id");
-          setCartId(guestCartId);
-        } else if (
-          guestCartId &&
-          firestoreCartId &&
-          guestCartId !== firestoreCartId
-        ) {
-          // Both have carts - prioritize authenticated cart
-          console.log("User has existing cart - loading authenticated cart");
-          setCartId(firestoreCartId);
-          await loadCart(firestoreCartId);
-          localStorage.removeItem("shopify_cart_id");
-        } else if (firestoreCartId) {
-          // Load authenticated cart
-          console.log("Loading authenticated cart from Firestore");
-          setCartId(firestoreCartId);
-          await loadCart(firestoreCartId);
-          localStorage.removeItem("shopify_cart_id");
-        }
-        setPreviousAuthState(true);
-      }
-      // User just logged out (was authenticated, now guest)
-      else if (!isSignedIn && previousAuthState) {
-        console.log("User logged out - keeping cart in localStorage");
-        // Save current cart ID to localStorage before losing auth context
-        if (cartId) {
-          localStorage.setItem("shopify_cart_id", cartId);
-        }
-        setPreviousAuthState(false);
-        // Don't clear the cart - keep it visible for the guest user
-      }
-    };
-
-    handleAuthChange();
-  }, [isSignedIn, user, previousAuthState, cartId, loadCart]);
-
-  // Save cart ID to appropriate storage
-  const saveCartId = async (id) => {
-    console.log("saveCartId called:", { id, isSignedIn, userId: user?.id });
-    setCartId(id);
-    if (isSignedIn && user) {
-      console.log("User is signed in, saving to Firestore");
-      await saveCartIdToFirestore(user.id, id);
-    } else {
-      console.log("User is guest, saving to localStorage");
-      localStorage.setItem("shopify_cart_id", id);
+    } finally {
+      setLoading(false);
     }
+  }, []);
+
+  // Load cart ID from localStorage on mount
+  useEffect(() => {
+    const storedCartId = localStorage.getItem(CART_ID_KEY);
+    if (storedCartId) {
+      setCartId(storedCartId);
+      loadCart(storedCartId);
+    }
+  }, [loadCart]);
+
+  // Save cart ID to localStorage
+  const saveCartId = (id) => {
+    setCartId(id);
+    localStorage.setItem(CART_ID_KEY, id);
   };
 
   // Add item to cart
   const addItem = async (merchandiseId, quantity = 1) => {
-    console.log("addItem called:", {
-      merchandiseId,
-      quantity,
-      cartId,
-      isSignedIn,
-    });
     try {
       setLoading(true);
       setError(null);
@@ -169,32 +72,15 @@ export const CartProvider = ({ children }) => {
       const lines = [{ merchandiseId, quantity }];
 
       if (cartId) {
-        // Add to existing cart
-        console.log("Adding to existing cart:", cartId);
         const updatedCart = await addToCart(cartId, lines);
-        console.log("Cart updated:", updatedCart);
         setCart(updatedCart);
-
-        // Ensure cart ID is saved in storage (in case it wasn't saved before)
-        if (isSignedIn && user) {
-          const storedCartId = await getCartIdFromFirestore(user.id);
-          if (!storedCartId) {
-            console.log("Cart ID not in Firestore, saving now");
-            await saveCartIdToFirestore(user.id, cartId);
-          }
-        }
       } else {
-        // Create new cart
-        console.log("Creating new cart");
         const newCart = await createCart(lines);
-        console.log("New cart created:", newCart);
         setCart(newCart);
-        await saveCartId(newCart.id);
+        saveCartId(newCart.id);
       }
-      console.log("addItem completed successfully");
     } catch (err) {
-      console.error("Error adding item to cart - Full error:", err);
-      console.error("Error stack:", err.stack);
+      console.error("Error adding item to cart:", err);
       setError(err.message);
       throw err;
     } finally {
@@ -214,7 +100,7 @@ export const CartProvider = ({ children }) => {
     // Optimistic update - update UI immediately
     setCart((prevCart) => {
       if (!prevCart) return prevCart;
-      
+
       const updatedLines = prevCart.lines.edges.map((edge) => {
         if (edge.node.id === lineId) {
           return {
@@ -244,31 +130,33 @@ export const CartProvider = ({ children }) => {
     updateTimers.current[lineId] = setTimeout(async () => {
       try {
         setError(null);
-        
+
         const finalQuantity = pendingUpdates.current[lineId];
-        
+
         if (finalQuantity <= 0) {
-          // Remove item if quantity is 0 or less
           await removeItem([lineId]);
         } else {
-          const updatedCart = await updateCartLine(cartId, lineId, finalQuantity);
+          const updatedCart = await updateCartLine(
+            cartId,
+            lineId,
+            finalQuantity,
+          );
           setCart(updatedCart);
         }
-        
-        // Clear pending update
+
         delete pendingUpdates.current[lineId];
         delete updateTimers.current[lineId];
       } catch (err) {
         console.error("Error updating cart item:", err);
         setError(err.message);
-        
+
         // Revert optimistic update on error - reload cart
         await loadCart(cartId);
-        
+
         delete pendingUpdates.current[lineId];
         delete updateTimers.current[lineId];
       }
-    }, 500); // Wait 500ms after last change before sending to API
+    }, 500);
   };
 
   // Remove items from cart
@@ -296,13 +184,7 @@ export const CartProvider = ({ children }) => {
       setLoading(true);
       setError(null);
 
-      // Remove cart ID from storage
-      if (isSignedIn && user) {
-        await deleteCartIdFromFirestore(user.id);
-      } else {
-        localStorage.removeItem("shopify_cart_id");
-      }
-
+      localStorage.removeItem(CART_ID_KEY);
       setCart(null);
       setCartId(null);
     } catch (err) {
@@ -314,18 +196,25 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  // Proceed to Shopify checkout
+  const checkout = () => {
+    if (cart?.checkoutUrl) {
+      window.location.href = cart.checkoutUrl;
+    }
+  };
+
   // Get total item count in cart
   const getCartItemCount = () => {
     if (!cart || !cart.lines) return 0;
     return cart.lines.edges.reduce(
       (total, edge) => total + edge.node.quantity,
-      0
+      0,
     );
   };
 
   // Get cart subtotal
   const getCartSubtotal = () => {
-    if (!cart || !cart.cost) return { amount: "0", currencyCode: "USD" };
+    if (!cart || !cart.cost) return { amount: "0", currencyCode: "PKR" };
     return cart.cost.subtotalAmount;
   };
 
@@ -339,101 +228,11 @@ export const CartProvider = ({ children }) => {
     updateItem,
     removeItem,
     clearCart,
+    checkout,
     getCartItemCount,
     getCartSubtotal,
     refreshCart: () => loadCart(cartId),
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
-};
-
-// ========================================
-// Firestore Helper Functions
-// ========================================
-
-/**
- * Get cart ID from Firestore for authenticated user
- */
-const getCartIdFromFirestore = async (userId) => {
-  try {
-    console.log("Fetching cart ID from Firestore for user:", userId);
-    const response = await fetch(
-      `${import.meta.env.VITE_SERVER_URL}/api/cart/get`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId }),
-      }
-    );
-
-    if (!response.ok) {
-      console.log("Cart not found in Firestore (response not ok)");
-      return null;
-    }
-
-    const data = await response.json();
-    console.log("Firestore response:", data);
-    return data.cartId || null;
-  } catch (error) {
-    console.error("Error getting cart ID from Firestore:", error);
-    return null;
-  }
-};
-
-/**
- * Save cart ID to Firestore for authenticated user
- */
-const saveCartIdToFirestore = async (userId, cartId) => {
-  try {
-    console.log("Saving cart ID to Firestore:", { userId, cartId });
-    const response = await fetch(
-      `${import.meta.env.VITE_SERVER_URL}/api/cart/save`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId, cartId }),
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error("Failed to save cart ID to Firestore");
-    }
-
-    console.log("Cart ID saved successfully to Firestore");
-    return true;
-  } catch (error) {
-    console.error("Error saving cart ID to Firestore:", error);
-    throw error;
-  }
-};
-
-/**
- * Delete cart ID from Firestore for authenticated user
- */
-const deleteCartIdFromFirestore = async (userId) => {
-  try {
-    const response = await fetch(
-      `${import.meta.env.VITE_SERVER_URL}/api/cart/delete`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId }),
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error("Failed to delete cart ID from Firestore");
-    }
-
-    return true;
-  } catch (error) {
-    console.error("Error deleting cart ID from Firestore:", error);
-    throw error;
-  }
 };

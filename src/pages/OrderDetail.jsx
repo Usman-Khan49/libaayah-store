@@ -1,18 +1,22 @@
 import { useState, useEffect } from "react";
-import { useUser } from "@clerk/clerk-react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { getCustomerOrder } from "../lib/shopifyCustomer";
+import { Footer } from "../components/layout";
 import "../styles/pages/OrderDetail.css";
 
 const OrderDetail = () => {
   const { orderId } = useParams();
-  const { user, isLoaded } = useUser();
+  const { isAuthenticated, accessToken, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!isLoaded || !user) {
+    if (authLoading) return;
+
+    if (!isAuthenticated || !accessToken) {
       setLoading(false);
       return;
     }
@@ -20,22 +24,14 @@ const OrderDetail = () => {
     const fetchOrder = async () => {
       try {
         setLoading(true);
-        const serverUrl = import.meta.env.VITE_SERVER_URL;
-        const response = await fetch(
-          `${serverUrl}/api/orders/${user.id}/${orderId}`
-        );
+        const decodedId = decodeURIComponent(orderId);
+        const orderData = await getCustomerOrder(accessToken, decodedId);
 
-        if (!response.ok) {
-          if (response.status === 404) {
-            throw new Error("Order not found");
-          } else if (response.status === 403) {
-            throw new Error("You don't have permission to view this order");
-          }
-          throw new Error("Failed to fetch order details");
+        if (!orderData) {
+          throw new Error("Order not found");
         }
 
-        const data = await response.json();
-        setOrder(data.order);
+        setOrder(orderData);
       } catch (err) {
         console.error("Error fetching order:", err);
         setError(err.message);
@@ -45,7 +41,7 @@ const OrderDetail = () => {
     };
 
     fetchOrder();
-  }, [user, isLoaded, orderId]);
+  }, [isAuthenticated, accessToken, authLoading, orderId]);
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -59,23 +55,23 @@ const OrderDetail = () => {
     });
   };
 
-  const formatPrice = (price, currency = "USD") => {
-    if (!price) return "N/A";
-    return new Intl.NumberFormat("en-US", {
+  const formatPrice = (priceObj) => {
+    if (!priceObj) return "N/A";
+    return new Intl.NumberFormat("en-PK", {
       style: "currency",
-      currency: currency,
-    }).format(parseFloat(price));
+      currency: priceObj.currencyCode || "PKR",
+    }).format(parseFloat(priceObj.amount));
   };
 
   const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case "paid":
+    switch (status?.toUpperCase()) {
+      case "PAID":
         return "status-paid";
-      case "pending":
+      case "PENDING":
         return "status-pending";
-      case "refunded":
+      case "REFUNDED":
         return "status-refunded";
-      case "fulfilled":
+      case "FULFILLED":
         return "status-fulfilled";
       default:
         return "status-default";
@@ -95,7 +91,7 @@ const OrderDetail = () => {
     return parts.join(", ");
   };
 
-  if (!isLoaded || loading) {
+  if (authLoading || loading) {
     return (
       <div className="order-detail-container">
         <div className="loading-state">
@@ -106,13 +102,17 @@ const OrderDetail = () => {
     );
   }
 
-  if (!user) {
+  if (!isAuthenticated) {
     return (
       <div className="order-detail-container">
         <div className="empty-state">
           <h2>Please Sign In</h2>
           <p>You need to be signed in to view order details.</p>
+          <Link to="/login" className="back-link">
+            Sign In
+          </Link>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -125,6 +125,7 @@ const OrderDetail = () => {
           <p>{error}</p>
           <button onClick={() => navigate("/orders")}>Back to Orders</button>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -138,9 +139,12 @@ const OrderDetail = () => {
             Back to Order History
           </Link>
         </div>
+        <Footer />
       </div>
     );
   }
+
+  const lineItems = order.lineItems?.edges?.map((e) => e.node) || [];
 
   return (
     <div className="order-detail-container">
@@ -149,7 +153,7 @@ const OrderDetail = () => {
           ← Back to Orders
         </Link>
         <h1>Order {order.name || `#${order.orderNumber}`}</h1>
-        <p className="order-date">Placed on {formatDate(order.createdAt)}</p>
+        <p className="order-date">Placed on {formatDate(order.processedAt)}</p>
       </div>
 
       <div className="order-detail-content">
@@ -160,9 +164,7 @@ const OrderDetail = () => {
             <div className="status-item">
               <span className="status-label">Payment Status:</span>
               <span
-                className={`status-badge ${getStatusColor(
-                  order.financialStatus
-                )}`}
+                className={`status-badge ${getStatusColor(order.financialStatus)}`}
               >
                 {order.financialStatus || "Unknown"}
               </span>
@@ -170,9 +172,7 @@ const OrderDetail = () => {
             <div className="status-item">
               <span className="status-label">Fulfillment Status:</span>
               <span
-                className={`status-badge ${getStatusColor(
-                  order.fulfillmentStatus
-                )}`}
+                className={`status-badge ${getStatusColor(order.fulfillmentStatus)}`}
               >
                 {order.fulfillmentStatus || "Pending"}
               </span>
@@ -184,19 +184,26 @@ const OrderDetail = () => {
         <div className="order-section">
           <h2>Order Items</h2>
           <div className="order-items">
-            {order.lineItems && order.lineItems.length > 0 ? (
-              order.lineItems.map((item, index) => (
-                <div key={item.id || index} className="order-item">
+            {lineItems.length > 0 ? (
+              lineItems.map((item, index) => (
+                <div key={index} className="order-item">
+                  {item.variant?.image?.url && (
+                    <img
+                      src={item.variant.image.url}
+                      alt={item.variant.image.altText || item.title}
+                      className="order-item-image"
+                    />
+                  )}
                   <div className="item-info">
                     <h3 className="item-title">{item.title}</h3>
-                    {item.variantTitle &&
-                      item.variantTitle !== "Default Title" && (
-                        <p className="item-variant">{item.variantTitle}</p>
+                    {item.variant?.title &&
+                      item.variant.title !== "Default Title" && (
+                        <p className="item-variant">{item.variant.title}</p>
                       )}
                     <p className="item-quantity">Quantity: {item.quantity}</p>
                   </div>
                   <div className="item-price">
-                    {formatPrice(item.price, order.currency)}
+                    {formatPrice(item.variant?.price)}
                   </div>
                 </div>
               ))
@@ -212,88 +219,40 @@ const OrderDetail = () => {
           <div className="summary-grid">
             <div className="summary-row">
               <span>Subtotal:</span>
-              <span>{formatPrice(order.subtotalPrice, order.currency)}</span>
+              <span>{formatPrice(order.subtotalPrice)}</span>
             </div>
             <div className="summary-row">
               <span>Tax:</span>
-              <span>{formatPrice(order.totalTax, order.currency)}</span>
+              <span>{formatPrice(order.totalTax)}</span>
             </div>
             <div className="summary-row total">
               <span>Total:</span>
-              <span>{formatPrice(order.totalPrice, order.currency)}</span>
+              <span>{formatPrice(order.totalPrice)}</span>
             </div>
           </div>
         </div>
 
-        {/* Customer Information */}
-        <div className="order-section">
-          <h2>Customer Information</h2>
-          <div className="info-grid">
-            <div className="info-item">
-              <span className="info-label">Email:</span>
-              <span>{order.email || order.customer?.email || "N/A"}</span>
-            </div>
-            {order.customer && (
-              <div className="info-item">
-                <span className="info-label">Name:</span>
-                <span>
-                  {order.customer.firstName} {order.customer.lastName}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Shipping & Billing */}
-        <div className="addresses-section">
+        {/* Shipping Address */}
+        {order.shippingAddress && (
           <div className="order-section">
             <h2>Shipping Address</h2>
             <div className="address-box">
-              {order.shippingAddress ? (
-                <>
-                  {order.shippingAddress.name && (
-                    <p className="address-name">{order.shippingAddress.name}</p>
-                  )}
-                  <p>{formatAddress(order.shippingAddress)}</p>
-                  {order.shippingAddress.phone && (
-                    <p className="address-phone">
-                      {order.shippingAddress.phone}
-                    </p>
-                  )}
-                </>
-              ) : (
-                <p>No shipping address provided</p>
+              {order.shippingAddress.name && (
+                <p className="address-name">{order.shippingAddress.name}</p>
+              )}
+              <p>{formatAddress(order.shippingAddress)}</p>
+              {order.shippingAddress.phone && (
+                <p className="address-phone">{order.shippingAddress.phone}</p>
               )}
             </div>
           </div>
-
-          <div className="order-section">
-            <h2>Billing Address</h2>
-            <div className="address-box">
-              {order.billingAddress ? (
-                <>
-                  {order.billingAddress.name && (
-                    <p className="address-name">{order.billingAddress.name}</p>
-                  )}
-                  <p>{formatAddress(order.billingAddress)}</p>
-                  {order.billingAddress.phone && (
-                    <p className="address-phone">
-                      {order.billingAddress.phone}
-                    </p>
-                  )}
-                </>
-              ) : (
-                <p>No billing address provided</p>
-              )}
-            </div>
-          </div>
-        </div>
+        )}
 
         {/* Action Links */}
-        {order.orderStatusUrl && (
+        {order.statusUrl && (
           <div className="order-actions">
             <a
-              href={order.orderStatusUrl}
+              href={order.statusUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="action-button"
@@ -303,6 +262,8 @@ const OrderDetail = () => {
           </div>
         )}
       </div>
+
+      <Footer />
     </div>
   );
 };

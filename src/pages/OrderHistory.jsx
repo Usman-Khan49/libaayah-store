@@ -1,16 +1,20 @@
 import { useState, useEffect } from "react";
-import { useUser } from "@clerk/clerk-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { getCustomerOrders } from "../lib/shopifyCustomer";
+import { Footer } from "../components/layout";
 import "../styles/pages/OrderHistory.css";
 
 const OrderHistory = () => {
-  const { user, isLoaded } = useUser();
+  const { isAuthenticated, accessToken, loading: authLoading } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!isLoaded || !user) {
+    if (authLoading) return;
+
+    if (!isAuthenticated || !accessToken) {
       setLoading(false);
       return;
     }
@@ -18,15 +22,8 @@ const OrderHistory = () => {
     const fetchOrders = async () => {
       try {
         setLoading(true);
-        const serverUrl = import.meta.env.VITE_SERVER_URL;
-        const response = await fetch(`${serverUrl}/api/orders/${user.id}`);
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch orders");
-        }
-
-        const data = await response.json();
-        setOrders(data.orders || []);
+        const customerOrders = await getCustomerOrders(accessToken);
+        setOrders(customerOrders);
       } catch (err) {
         console.error("Error fetching orders:", err);
         setError(err.message);
@@ -36,7 +33,7 @@ const OrderHistory = () => {
     };
 
     fetchOrders();
-  }, [user, isLoaded]);
+  }, [isAuthenticated, accessToken, authLoading]);
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -48,143 +45,172 @@ const OrderHistory = () => {
     });
   };
 
-  const formatPrice = (price, currency = "USD") => {
-    if (!price) return "N/A";
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency,
-    }).format(parseFloat(price));
+  const formatPrice = (priceObj) => {
+    if (!priceObj) return "N/A";
+    return `${parseFloat(priceObj.amount).toLocaleString("en-PK")} Rs.`;
+  };
+
+  const getStatusLabel = (status) => {
+    if (!status) return "";
+    return status.charAt(0) + status.slice(1).toLowerCase();
   };
 
   const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case "paid":
+    switch (status?.toUpperCase()) {
+      case "PAID":
         return "status-paid";
-      case "pending":
+      case "PENDING":
         return "status-pending";
-      case "refunded":
+      case "REFUNDED":
         return "status-refunded";
-      case "fulfilled":
+      case "FULFILLED":
         return "status-fulfilled";
       default:
         return "status-default";
     }
   };
 
-  if (!isLoaded || loading) {
+  if (authLoading || loading) {
     return (
-      <div className="order-history-container">
-        <div className="loading-state">
-          <div className="spinner"></div>
-          <p>Loading your orders...</p>
+      <div className="orders-page">
+        <div className="orders-title-section">
+          <h1 className="orders-title">ORDER HISTORY</h1>
         </div>
+        <div className="orders-content">
+          <div className="orders-empty">
+            <p>Loading your orders...</p>
+          </div>
+        </div>
+        <Footer />
       </div>
     );
   }
 
-  if (!user) {
+  if (!isAuthenticated) {
     return (
-      <div className="order-history-container">
-        <div className="empty-state">
-          <h2>Please Sign In</h2>
-          <p>You need to be signed in to view your order history.</p>
+      <div className="orders-page">
+        <div className="orders-title-section">
+          <h1 className="orders-title">ORDER HISTORY</h1>
         </div>
+        <div className="orders-content">
+          <div className="orders-empty">
+            <p>You need to be signed in to view your order history.</p>
+            <Link to="/login" className="orders-action-btn">
+              Sign In
+            </Link>
+          </div>
+        </div>
+        <Footer />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="order-history-container">
-        <div className="error-state">
-          <h2>Error Loading Orders</h2>
-          <p>{error}</p>
-          <button onClick={() => window.location.reload()}>Try Again</button>
+      <div className="orders-page">
+        <div className="orders-title-section">
+          <h1 className="orders-title">ORDER HISTORY</h1>
         </div>
+        <div className="orders-content">
+          <div className="orders-empty">
+            <p>{error}</p>
+            <button
+              className="orders-action-btn"
+              onClick={() => window.location.reload()}
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+        <Footer />
       </div>
     );
   }
 
   if (orders.length === 0) {
     return (
-      <div className="order-history-container">
-        <div className="empty-state">
-          <h2>No Orders Yet</h2>
-          <p>You haven't placed any orders yet.</p>
-          <Link to="/products" className="browse-products-btn">
-            Browse Products
-          </Link>
+      <div className="orders-page">
+        <div className="orders-title-section">
+          <h1 className="orders-title">ORDER HISTORY</h1>
         </div>
+        <div className="orders-content">
+          <div className="orders-empty">
+            <p>You haven&apos;t placed any orders yet.</p>
+            <Link to="/products" className="orders-action-btn">
+              Browse Products
+            </Link>
+          </div>
+        </div>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="order-history-container">
-      <div className="order-history-header">
-        <h1>Order History</h1>
-        <p className="order-count">
+    <div className="orders-page">
+      {/* Page Title */}
+      <div className="orders-title-section">
+        <h1 className="orders-title">ORDER HISTORY</h1>
+        <p className="orders-count">
           {orders.length} order{orders.length !== 1 ? "s" : ""}
         </p>
       </div>
 
-      <div className="orders-list">
-        {orders.map((order) => (
-          <Link
-            key={order.id}
-            to={`/orders/${order.id}`}
-            className="order-card"
-          >
-            <div className="order-card-header">
-              <div className="order-info">
-                <h3 className="order-number">
-                  {order.name || `#${order.orderNumber}`}
-                </h3>
-                <p className="order-date">{formatDate(order.createdAt)}</p>
-              </div>
-              <div className="order-total">
-                {formatPrice(order.totalPrice, order.currency)}
-              </div>
-            </div>
+      {/* Orders List */}
+      <div className="orders-content">
+        <div className="orders-list">
+          {orders.map((order) => {
+            const lineItems = order.lineItems?.edges?.map((e) => e.node) || [];
 
-            <div className="order-card-body">
-              <div className="order-items-preview">
-                {order.lineItems && order.lineItems.length > 0 && (
-                  <p className="items-count">
-                    {order.lineItems.length} item
-                    {order.lineItems.length !== 1 ? "s" : ""}
-                  </p>
-                )}
-              </div>
+            return (
+              <Link
+                key={order.id}
+                to={`/orders/${encodeURIComponent(order.id)}`}
+                className="order-row"
+              >
+                <div className="order-row-left">
+                  <h3 className="order-name">
+                    {order.name || `#${order.orderNumber}`}
+                  </h3>
+                  <p className="order-date">{formatDate(order.processedAt)}</p>
+                  {lineItems.length > 0 && (
+                    <p className="order-items-count">
+                      {lineItems.length} item
+                      {lineItems.length !== 1 ? "s" : ""}
+                    </p>
+                  )}
+                </div>
 
-              <div className="order-statuses">
-                {order.financialStatus && (
-                  <span
-                    className={`status-badge ${getStatusColor(
-                      order.financialStatus
-                    )}`}
-                  >
-                    {order.financialStatus}
+                <div className="order-row-center">
+                  {order.financialStatus && (
+                    <span
+                      className={`order-status ${getStatusColor(order.financialStatus)}`}
+                    >
+                      {getStatusLabel(order.financialStatus)}
+                    </span>
+                  )}
+                  {order.fulfillmentStatus && (
+                    <span
+                      className={`order-status ${getStatusColor(order.fulfillmentStatus)}`}
+                    >
+                      {getStatusLabel(order.fulfillmentStatus)}
+                    </span>
+                  )}
+                </div>
+
+                <div className="order-row-right">
+                  <span className="order-total">
+                    {formatPrice(order.totalPrice)}
                   </span>
-                )}
-                {order.fulfillmentStatus && (
-                  <span
-                    className={`status-badge ${getStatusColor(
-                      order.fulfillmentStatus
-                    )}`}
-                  >
-                    {order.fulfillmentStatus}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="order-card-footer">
-              <span className="view-details">View Details →</span>
-            </div>
-          </Link>
-        ))}
+                  <span className="order-view-link">View Details →</span>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
       </div>
+
+      <Footer />
     </div>
   );
 };
