@@ -9,7 +9,11 @@ export const APP_CONFIG = {
 export const API_CONFIG = {
   shopifyStorefrontUrl: import.meta.env.VITE_SHOPIFY_STOREFRONT_URL,
   shopifyStorefrontToken: import.meta.env.VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN,
-  serverUrl: import.meta.env.VITE_SERVER_URL || "http://localhost:3001",
+  // In production, uses same domain (Vercel serverless function at /api)
+  // In dev, uses local Express server
+  serverUrl:
+    import.meta.env.VITE_SERVER_URL ||
+    (import.meta.env.PROD ? "" : "http://localhost:3001"),
 };
 
 // Routes

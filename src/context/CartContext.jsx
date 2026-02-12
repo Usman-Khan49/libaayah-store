@@ -37,8 +37,12 @@ export const CartProvider = ({ children }) => {
     } catch (err) {
       console.error("Error loading cart:", err);
       setError(err.message);
-      // If cart not found, clear the stored ID
-      if (err.message?.includes("not found") || !err.message) {
+      // If cart not found or doesn't exist, clear the stored ID
+      if (
+        err.message?.includes("not found") ||
+        err.message?.includes("does not exist") ||
+        !err.message
+      ) {
         setCartId(null);
         setCart(null);
         localStorage.removeItem(CART_ID_KEY);
@@ -72,8 +76,25 @@ export const CartProvider = ({ children }) => {
       const lines = [{ merchandiseId, quantity }];
 
       if (cartId) {
-        const updatedCart = await addToCart(cartId, lines);
-        setCart(updatedCart);
+        try {
+          const updatedCart = await addToCart(cartId, lines);
+          setCart(updatedCart);
+        } catch (err) {
+          // If cart doesn't exist, clear old ID and create new cart
+          if (
+            err.message?.includes("does not exist") ||
+            err.message?.includes("not found")
+          ) {
+            console.log("Cart expired, creating new cart");
+            localStorage.removeItem(CART_ID_KEY);
+            setCartId(null);
+            const newCart = await createCart(lines);
+            setCart(newCart);
+            saveCartId(newCart.id);
+          } else {
+            throw err;
+          }
+        }
       } else {
         const newCart = await createCart(lines);
         setCart(newCart);
