@@ -20,10 +20,7 @@ export const CartProvider = ({ children }) => {
   const [cartId, setCartId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  // Debounce timer refs for quantity updates
-  const updateTimers = useRef({});
-  const pendingUpdates = useRef({});
+  const [updatingLineId, setUpdatingLineId] = useState(null);
 
   // Load cart from Shopify
   const loadCart = useCallback(async (id) => {
@@ -109,75 +106,28 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // Update cart line quantity with optimistic updates and debouncing
+  // Update cart line quantity - synchronous with loading state
   const updateItem = async (lineId, quantity) => {
-    if (!cartId || !cart) return;
+    if (!cartId || !cart || updatingLineId) return;
 
-    // Clear existing timer for this line
-    if (updateTimers.current[lineId]) {
-      clearTimeout(updateTimers.current[lineId]);
-    }
+    try {
+      setUpdatingLineId(lineId);
+      setError(null);
 
-    // Optimistic update - update UI immediately
-    setCart((prevCart) => {
-      if (!prevCart) return prevCart;
-
-      const updatedLines = prevCart.lines.edges.map((edge) => {
-        if (edge.node.id === lineId) {
-          return {
-            ...edge,
-            node: {
-              ...edge.node,
-              quantity: quantity,
-            },
-          };
-        }
-        return edge;
-      });
-
-      return {
-        ...prevCart,
-        lines: {
-          ...prevCart.lines,
-          edges: updatedLines,
-        },
-      };
-    });
-
-    // Store pending update
-    pendingUpdates.current[lineId] = quantity;
-
-    // Debounce the actual API call
-    updateTimers.current[lineId] = setTimeout(async () => {
-      try {
-        setError(null);
-
-        const finalQuantity = pendingUpdates.current[lineId];
-
-        if (finalQuantity <= 0) {
-          await removeItem([lineId]);
-        } else {
-          const updatedCart = await updateCartLine(
-            cartId,
-            lineId,
-            finalQuantity,
-          );
-          setCart(updatedCart);
-        }
-
-        delete pendingUpdates.current[lineId];
-        delete updateTimers.current[lineId];
-      } catch (err) {
-        console.error("Error updating cart item:", err);
-        setError(err.message);
-
-        // Revert optimistic update on error - reload cart
-        await loadCart(cartId);
-
-        delete pendingUpdates.current[lineId];
-        delete updateTimers.current[lineId];
+      if (quantity <= 0) {
+        await removeItem([lineId]);
+      } else {
+        const updatedCart = await updateCartLine(cartId, lineId, quantity);
+        setCart(updatedCart);
       }
-    }, 500);
+    } catch (err) {
+      console.error("Error updating cart item:", err);
+      setError(err.message);
+      // Reload cart on error
+      await loadCart(cartId);
+    } finally {
+      setUpdatingLineId(null);
+    }
   };
 
   // Remove items from cart
@@ -245,6 +195,7 @@ export const CartProvider = ({ children }) => {
     cartId,
     loading,
     error,
+    updatingLineId,
     addItem,
     updateItem,
     removeItem,

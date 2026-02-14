@@ -4,7 +4,7 @@ import CartItem from "./CartItem";
 import "../../styles/components/CartDrawer.css";
 
 export default function CartDrawer({ isOpen, onClose }) {
-  const { cart, loading, getCartSubtotal, getCartItemCount } = useCart();
+  const { cart, loading, getCartSubtotal, getCartItemCount, updatingLineId } = useCart();
 
   // Prevent body scroll when drawer is open
   useEffect(() => {
@@ -51,9 +51,9 @@ export default function CartDrawer({ isOpen, onClose }) {
       />
 
       {/* Drawer */}
-      <div className={`cart-drawer ${isOpen ? "open" : ""}`}>
+      <div className={`cart-drawer ${isOpen ? "open" : ""} ${updatingLineId ? "updating" : ""}`}>
         <div className="cart-header">
-          <h2>Shopping Cart ({itemCount})</h2>
+          <h2>Shopping Cart</h2>
           <button
             className="close-button"
             onClick={onClose}

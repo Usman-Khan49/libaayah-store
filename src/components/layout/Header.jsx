@@ -3,9 +3,9 @@ import { useState } from "react";
 import { useWishlist } from "../../context/WishlistContext";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../hooks/useCart";
+import CartDrawer from "../cart/CartDrawer";
 import "../../styles/components/Header.css";
 import logoImg from "../../assets/Logo.png";
-import searchIcon from "../../assets/search.png";
 import userIcon from "../../assets/user.png";
 import heartIcon from "../../assets/heart.png";
 import cartIcon from "../../assets/cart.png";
@@ -17,6 +17,8 @@ export default function Header() {
   const wishlistCount = getWishlistCount();
   const cartCount = getCartItemCount();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [collectionOpen, setCollectionOpen] = useState(false);
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -25,20 +27,6 @@ export default function Header() {
   return (
     <header className="header">
       <div className="header-container">
-        {/* Left Section - Desktop */}
-        <div className="header-left desktop-only">
-          <button className="icon-btn" aria-label="Search">
-            <img src={searchIcon} alt="Search" />
-          </button>
-          <Link
-            to={isAuthenticated ? "/account" : "/login"}
-            className="icon-btn"
-            aria-label="User Profile"
-          >
-            <img src={userIcon} alt="User" />
-          </Link>
-        </div>
-
         {/* Hamburger Menu - Mobile */}
         <button
           className="hamburger-btn mobile-only"
@@ -50,37 +38,101 @@ export default function Header() {
           <span className={`hamburger-line ${menuOpen ? "open" : ""}`}></span>
         </button>
 
-        {/* Center Section */}
-        <nav className="header-center">
-          <Link to="/products" className="nav-link desktop-only">
-            Unstitched
-          </Link>
-          <Link to="/products" className="nav-link desktop-only">
-            Winter Collection
-          </Link>
-          <Link to="/" className="logo-link">
-            <img src={logoImg} alt="Libaayah" className="logo-img" />
-          </Link>
-          <Link to="/products" className="nav-link desktop-only">
-            Summer Collection
-          </Link>
-          <Link to="/products" className="nav-link sale desktop-only">
-            Sale!
+        {/* Left Section - Navigation Links */}
+        <nav className="header-left desktop-only">
+          <div 
+            className="nav-item-wrapper"
+            onMouseEnter={() => setCollectionOpen(true)}
+            onMouseLeave={() => setCollectionOpen(false)}
+          >
+            <Link to="/products" className="nav-link">
+              Collection
+            </Link>
+            
+            {/* Mega Dropdown Menu */}
+            <div className={`mega-menu ${collectionOpen ? 'open' : ''}`}>
+              <div className="mega-menu-content">
+                {/* Column 1: Featured Image */}
+                <div className="mega-menu-image">
+                  <img src="/src/assets/img36.jpg" alt="Collection" />
+                </div>
+                
+                {/* Column 2: Summer */}
+                <div className="mega-menu-column">
+                  <Link to="/products?category=summer" className="mega-menu-title">
+                    Summer
+                  </Link>
+                  <ul className="mega-menu-list">
+                    <li><Link to="/products?category=summer&fabric=lawn">Lawn</Link></li>
+                    <li><Link to="/products?category=summer&fabric=linen">Linen</Link></li>
+                    <li><Link to="/products?category=summer&fabric=cotton">Cotton</Link></li>
+                  </ul>
+                </div>
+                
+                {/* Column 3: Winter */}
+                <div className="mega-menu-column">
+                  <Link to="/products?category=winter" className="mega-menu-title">
+                    Winter
+                  </Link>
+                  <ul className="mega-menu-list">
+                    <li><Link to="/products?category=winter&fabric=khaddar">Khaddar</Link></li>
+                    <li><Link to="/products?category=winter&fabric=karandi">Karandi</Link></li>
+                    <li><Link to="/products?category=winter&fabric=velvet">Velvet</Link></li>
+                  </ul>
+                </div>
+                
+                {/* Column 4: New Arrivals */}
+                <div className="mega-menu-column">
+                  <Link to="/products?sort=new" className="mega-menu-title">
+                    New Arrivals
+                  </Link>
+                </div>
+                
+                {/* Column 5: Shop All */}
+                <div className="mega-menu-column">
+                  <Link to="/products" className="mega-menu-title">
+                    Shop All
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <Link to="/products?sale=true" className="nav-link sale">
+            Sale
           </Link>
         </nav>
 
+        {/* Center Section - Logo Only */}
+        <div className="header-center">
+          <Link to="/" className="logo-link">
+            <img src={logoImg} alt="Libaayah" className="logo-img" />
+          </Link>
+        </div>
+
         {/* Right Section */}
         <div className="header-right">
+          <Link
+            to={isAuthenticated ? "/account" : "/login"}
+            className="icon-btn"
+            aria-label="User Profile"
+          >
+            <img src={userIcon} alt="User" />
+          </Link>
           <Link to="/wishlist" className="icon-btn" aria-label="Wishlist">
             <img src={heartIcon} alt="Wishlist" />
             {wishlistCount > 0 && (
               <span className="icon-badge">{wishlistCount}</span>
             )}
           </Link>
-          <Link to="/cart" className="icon-btn" aria-label="Shopping Bag">
+          <button 
+            className="icon-btn" 
+            aria-label="Shopping Bag"
+            onClick={() => setCartOpen(true)}
+          >
             <img src={cartIcon} alt="Cart" />
             {cartCount > 0 && <span className="icon-badge">{cartCount}</span>}
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -149,6 +201,9 @@ export default function Header() {
 
       {/* Overlay */}
       {menuOpen && <div className="menu-overlay" onClick={toggleMenu}></div>}
+      
+      {/* Cart Drawer */}
+      <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} />
     </header>
   );
 }
