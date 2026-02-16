@@ -2,18 +2,13 @@
    Products Carousel Styles
    ======================================== */
 
-.products-carousel-section {
-  padding: 32px 64px;
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
-}
-
 .products-carousel-wrapper {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 16px;
+  padding: 0 32px;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
 .products-carousel-container {
@@ -23,47 +18,106 @@
 
 .products-carousel-track {
   display: flex;
-  gap: 32px;
+  gap: 20px;
   transition: transform 0.5s ease;
 }
 
 .product-carousel-item {
-  flex: 0 0 calc((100% - 96px) / 4);
+  flex: 0 0 calc((100% - 60px) / 4);
   min-width: 0;
+}
+
+/* Carousel Buttons */
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid #E5E5E5;
+  background-color: #FFFFFF;
+  color: #000000;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: background-color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.carousel-btn:hover {
+  background-color: #8B2E3F;
+  color: #FFFFFF;
+  border-color: #8B2E3F;
+}
+
+.carousel-btn-left {
+  left: -22px;
+}
+
+.carousel-btn-right {
+  right: -22px;
 }
 
 /* ========================================
    Responsive Design
    ======================================== */
 @media (max-width: 1024px) {
-  .products-carousel-section {
-    padding: 32px;
+  .products-carousel-wrapper {
+    padding: 0 32px;
   }
 
   .products-carousel-track {
-    gap: 24px;
+    gap: 20px;
   }
 
   .product-carousel-item {
-    flex: 0 0 calc((100% - 48px) / 3);
+    flex: 0 0 calc((100% - 60px) / 4);
+  }
+
+  .carousel-btn-left {
+    left: -16px;
+  }
+
+  .carousel-btn-right {
+    right: -16px;
   }
 }
 
 @media (max-width: 768px) {
-  .products-carousel-section {
-    padding: 16px;
+  .products-carousel-wrapper {
+    padding: 0 16px;
   }
 
-  .products-carousel-wrapper {
-    gap: 8px;
+  .products-carousel-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .products-carousel-container::-webkit-scrollbar {
+    display: none;
   }
 
   .products-carousel-track {
-    gap: 16px;
+    gap: 12px;
+    transition: none;
+    transform: none !important;
   }
 
   .product-carousel-item {
-    flex: 0 0 calc((100% - 16px) / 2);
+    flex: 0 0 calc((100% - 12px) / 2);
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .carousel-btn {
+    display: none;
   }
 }
 
@@ -73,6 +127,7 @@
   }
 
   .product-carousel-item {
-    flex: 0 0 calc((100% - 12px) / 2);
+    flex: 0 0 calc((100% - 12px) / 1.4);
+    max-width: 280px;
   }
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import "../../styles/components/UtilitiesSection.css";
 import trackingIcon from "../../assets/tracking.png";
@@ -7,6 +7,26 @@ import moneyIcon from "../../assets/money.png";
 
 export default function UtilitiesSection() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    const diff = touchStartX.current - touchEndX.current;
+    const minSwipe = 50;
+    if (diff > minSwipe && currentIndex < 2) {
+      setCurrentIndex((prev) => prev + 1);
+    } else if (diff < -minSwipe && currentIndex > 0) {
+      setCurrentIndex((prev) => prev - 1);
+    }
+  };
 
   const utilities = [
     {
@@ -35,7 +55,12 @@ export default function UtilitiesSection() {
 
   return (
     <section className="utilities-section">
-      <div className="utilities-container">
+      <div
+        className="utilities-container"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         {utilities.map((utility, index) => {
           const content = (
             <>

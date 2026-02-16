@@ -4,8 +4,8 @@
 
 .utilities-section {
   width: 100%;
-  background-color: #ffffff;
-  padding: 48px 64px;
+  background-color: transparent;
+  padding: 64px 64px;
 }
 
 .utilities-container {
@@ -51,7 +51,7 @@
 }
 
 .utility-title {
-  font-family: var(--font-secondary);
+  font-family: var(--font-body);
   font-size: 1rem;
   font-weight: 600;
   color: #000000;
@@ -61,7 +61,7 @@
 }
 
 .utility-description {
-  font-family: var(--font-secondary);
+  font-family: var(--font-body);
   font-size: 0.875rem;
   font-weight: 400;
   color: #2A2A2A;

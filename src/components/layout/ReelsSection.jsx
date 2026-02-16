@@ -110,6 +110,16 @@ export default function ReelsSection() {
       likes: 61,
       comments: 92,
     },
+    {
+      id: 5,
+      videoUrl: "/Sample-Reel-Video.mp4",
+      thumbnail: "/fashion-model-in-coral-blazer-and-blue-top.jpg",
+      productCode: "SW-205",
+      productName: "Elegant Winter Wear",
+      price: "Rs19,800",
+      likes: 55,
+      comments: 78,
+    },
   ];
 
   const openReelModal = (index) => {
@@ -139,8 +149,6 @@ export default function ReelsSection() {
 
   return (
     <section className="reels-section">
-      <h2 className="reels-title">Watch. Shop!</h2>
-
       <div className="reels-container" ref={containerRef}>
         {reels.map((reel, index) => (
           <div

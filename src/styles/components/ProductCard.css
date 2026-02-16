@@ -40,7 +40,7 @@
   background-color: transparent;
   border: 2px solid #000000;
   color: #000000;
-  font-family: var(--font-secondary);
+  font-family: var(--font-body);
   font-size: 0.938rem;
   font-weight: 500;
   cursor: pointer;
@@ -71,7 +71,7 @@
 }
 
 .productTitle {
-  font-family: var(--font-secondary);
+  font-family: var(--font-body);
   font-size: 0.938rem;
   font-weight: 400;
   color: #2A2A2A;
@@ -80,7 +80,7 @@
 }
 
 .productPrice {
-  font-family: var(--font-secondary);
+  font-family: var(--font-body);
   font-size: 1.125rem;
   font-weight: 600;
   color: #2A2A2A;
@@ -120,19 +120,19 @@
   }
 
   .productImageWrapper {
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 26 / 38;
   }
 
   .productTitle {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
   }
 
   .productPrice {
-    font-size: 0.9368rem;
+    font-size: 1rem;
   }
 
   .productDetail {
-    padding: 8px 12px;
+    padding: 10px 12px;
   }
 
   .wishlist-heart {
@@ -153,11 +153,11 @@
   }
 
   .productPrice {
-    font-size: 1rem;
+    font-size: 1.05rem;
   }
 
   .add-to-cart-overlay {
-    padding: 8px 20px;
-    font-size: 0.75rem;
+    padding: 10px 28px;
+    font-size: 0.85rem;
   }
 }

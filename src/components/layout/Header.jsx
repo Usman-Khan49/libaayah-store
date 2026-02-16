@@ -19,6 +19,9 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [collectionOpen, setCollectionOpen] = useState(false);
+  const [mobileCollectionOpen, setMobileCollectionOpen] = useState(false);
+  const [mobileSummerOpen, setMobileSummerOpen] = useState(false);
+  const [mobileWinterOpen, setMobileWinterOpen] = useState(false);
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -152,33 +155,95 @@ export default function Header() {
 
           {/* Navigation Links */}
           <nav className="mobile-nav">
+            {/* Collection with Dropdown */}
+            <div className="mobile-nav-item">
+              <div 
+                className="mobile-nav-link with-dropdown"
+                onClick={() => setMobileCollectionOpen(!mobileCollectionOpen)}
+              >
+                <span>Collection</span>
+                <span className={`dropdown-arrow ${mobileCollectionOpen ? 'open' : ''}`}>▼</span>
+              </div>
+              
+              {/* Subcategories Dropdown */}
+              <div className={`mobile-dropdown ${mobileCollectionOpen ? 'open' : ''}`}>
+                {/* Summer with nested dropdown */}
+                <div className="mobile-dropdown-section">
+                  <div 
+                    className="mobile-dropdown-title with-dropdown"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMobileSummerOpen(!mobileSummerOpen);
+                    }}
+                  >
+                    <span>Summer</span>
+                    <span className={`dropdown-arrow ${mobileSummerOpen ? 'open' : ''}`}>▼</span>
+                  </div>
+                  <div className={`mobile-nested-dropdown ${mobileSummerOpen ? 'open' : ''}`}>
+                    <Link to="/products?category=summer&fabric=lawn" className="mobile-dropdown-link" onClick={toggleMenu}>
+                      Lawn
+                    </Link>
+                    <Link to="/products?category=summer&fabric=linen" className="mobile-dropdown-link" onClick={toggleMenu}>
+                      Linen
+                    </Link>
+                    <Link to="/products?category=summer&fabric=cotton" className="mobile-dropdown-link" onClick={toggleMenu}>
+                      Cotton
+                    </Link>
+                  </div>
+                </div>
+                
+                {/* Winter with nested dropdown */}
+                <div className="mobile-dropdown-section">
+                  <div 
+                    className="mobile-dropdown-title with-dropdown"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMobileWinterOpen(!mobileWinterOpen);
+                    }}
+                  >
+                    <span>Winter</span>
+                    <span className={`dropdown-arrow ${mobileWinterOpen ? 'open' : ''}`}>▼</span>
+                  </div>
+                  <div className={`mobile-nested-dropdown ${mobileWinterOpen ? 'open' : ''}`}>
+                    <Link to="/products?category=winter&fabric=khaddar" className="mobile-dropdown-link" onClick={toggleMenu}>
+                      Khaddar
+                    </Link>
+                    <Link to="/products?category=winter&fabric=karandi" className="mobile-dropdown-link" onClick={toggleMenu}>
+                      Karandi
+                    </Link>
+                    <Link to="/products?category=winter&fabric=velvet" className="mobile-dropdown-link" onClick={toggleMenu}>
+                      Velvet
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* New Arrivals Link */}
+            <Link
+              to="/products?sort=new"
+              className="mobile-nav-link"
+              onClick={toggleMenu}
+            >
+              New Arrivals
+            </Link>
+            
+            {/* Shop All Link */}
             <Link
               to="/products"
+              className="mobile-nav-link"
+              onClick={toggleMenu}
+            >
+              Shop All
+            </Link>
+            
+            {/* Sale Link */}
+            <Link
+              to="/products?sale=true"
               className="mobile-nav-link sale"
               onClick={toggleMenu}
             >
-              Winter Sale!
-            </Link>
-            <Link
-              to="/products"
-              className="mobile-nav-link"
-              onClick={toggleMenu}
-            >
-              Unstitched Collection
-            </Link>
-            <Link
-              to="/products"
-              className="mobile-nav-link"
-              onClick={toggleMenu}
-            >
-              Winter Collection
-            </Link>
-            <Link
-              to="/products"
-              className="mobile-nav-link"
-              onClick={toggleMenu}
-            >
-              Summer Collection
+              Sale
             </Link>
             <Link
               to={isAuthenticated ? "/account" : "/login"}

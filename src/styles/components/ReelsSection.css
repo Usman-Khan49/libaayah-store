@@ -1,5 +1,5 @@
 .reels-section {
-  padding: 16px 0;
+  padding: 0;
   background-color: transparent;
   overflow: hidden;
 }
@@ -16,13 +16,16 @@
 
 .reels-container {
   display: flex;
-  gap: 1.5rem;
+  gap: 2rem;
   overflow-x: auto;
   overflow-y: visible;
-  padding: 1rem 2rem;
+  padding: 2rem;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x proximity;
+  justify-content: center;
+  max-width: none;
+  margin: 0 auto;
 }
 
 .reels-container::-webkit-scrollbar {
@@ -45,8 +48,8 @@
 
 .reel-card {
   flex-shrink: 0;
-  width: 195px;
-  height: 340px;
+  width: 277px;
+  height: 490px;
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
@@ -57,7 +60,7 @@
 }
 
 .reel-card:hover {
-  transform: scale(1.1);
+  transform: scale(1.05);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   z-index: 10;
 }

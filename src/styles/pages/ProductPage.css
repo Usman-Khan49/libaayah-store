@@ -13,7 +13,7 @@
 .loading, .error {
   text-align: center;
   padding: 4rem;
-  font-family: var(--font-secondary);
+  font-family: var(--font-body);
   font-size: 1.2rem;
   color: #2A2A2A;
 }
@@ -24,7 +24,7 @@
 .breadcrumbs {
   width: 100%;
   padding: 16px calc((100% - 1300px) / 2 + 64px);
-  font-family: var(--font-secondary);
+  font-family: var(--font-body);
   font-size: 0.688rem;
   color: #2A2A2A;
   background-color: #ececec;
@@ -105,7 +105,7 @@
 }
 
 .product-title {
-  font-family: var(--font-primary);
+  font-family: var(--font-heading);
   font-size: 1.35rem;
   font-weight: 600;
   color: #2A2A2A;
@@ -114,7 +114,7 @@
 }
 
 .product-price {
-  font-family: var(--font-secondary);
+  font-family: var(--font-body);
   font-size: 1.375rem;
   font-weight: 400;
   color: #2A2A2A;
@@ -137,7 +137,7 @@
 .spec-item {
   display: flex;
   gap: 8px;
-  font-family: var(--font-secondary);
+  font-family: var(--font-body);
   font-size: 0.813rem;
 }
 
@@ -189,7 +189,7 @@
 }
 
 .qty-value {
-  font-family: var(--font-secondary);
+  font-family: var(--font-body);
   font-size: 1rem;
   font-weight: 500;
   color: #000000;
@@ -227,7 +227,7 @@
   padding: 12px;
   background-color: #111111;
   color: #FFFFFF;
-  font-family: var(--font-secondary);
+  font-family: var(--font-body);
   font-size: 1rem;
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -250,7 +250,7 @@
   padding: 16px;
   background-color: #870000;
   color: #FFFFFF;
-  font-family: var(--font-secondary);
+  font-family: var(--font-body);
   font-size: 1rem;
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -276,7 +276,7 @@
   padding: 16px;
   background-color: #E2C2C7;
   border-radius: 6px;
-  font-family: var(--font-secondary);
+  font-family: var(--font-body);
   font-size: 0.875rem;
   color: #000000;
 }
@@ -299,7 +299,7 @@
   padding: 16px 0;
   background: none;
   border: none;
-  font-family: var(--font-secondary);
+  font-family: var(--font-body);
   font-size: 1rem;
   font-weight: 600;
   color: #2A2A2A;
@@ -313,7 +313,7 @@
 
 .accordion-content {
   padding: 0 0 16px 0;
-  font-family: var(--font-secondary);
+  font-family: var(--font-body);
   font-size: 0.938rem;
   color: #666666;
   line-height: 1.6;
@@ -355,7 +355,7 @@
 }
 
 .disclaimer {
-  font-family: var(--font-secondary);
+  font-family: var(--font-body);
   font-size: 0.75rem;
   color: #999999;
   line-height: 1.5;
@@ -373,7 +373,7 @@
 
 .related-heading {
   text-align: center;
-  font-family: var(--font-primary);
+  font-family: var(--font-heading);
   font-size: 2rem;
   font-weight: 600;
   color: #2A2A2A;
