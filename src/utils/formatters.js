@@ -1,25 +1,24 @@
 /**
- * Format currency value
- * @param {number|string} amount - The amount to format
- * @param {string} currency - Currency code (default: USD)
- * @param {string} locale - Locale code (default: en-US)
- * @returns {string} Formatted currency string
+ * Format a Shopify price object for display.
+ * @param {Object} priceObj - Shopify price object { amount, currencyCode }
+ * @returns {string} Formatted currency string, e.g. "Rs 2,500.00"
  */
-export const formatPrice = (amount, currency = "USD", locale = "en-US") => {
-  return new Intl.NumberFormat(locale, {
+export const formatPrice = (priceObj) => {
+  if (!priceObj) return "N/A";
+  return new Intl.NumberFormat("en-PK", {
     style: "currency",
-    currency: currency,
-  }).format(amount);
+    currency: priceObj.currencyCode || "PKR",
+  }).format(parseFloat(priceObj.amount));
 };
 
 /**
- * Format date
- * @param {string|Date} date - Date to format
- * @param {string} locale - Locale code (default: en-US)
+ * Format date string
+ * @param {string|Date} dateString - Date to format
  * @returns {string} Formatted date string
  */
-export const formatDate = (date, locale = "en-US") => {
-  return new Date(date).toLocaleDateString(locale, {
+export const formatDate = (dateString) => {
+  if (!dateString) return "N/A";
+  return new Date(dateString).toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -27,13 +26,13 @@ export const formatDate = (date, locale = "en-US") => {
 };
 
 /**
- * Format date and time
- * @param {string|Date} date - Date to format
- * @param {string} locale - Locale code (default: en-US)
+ * Format date and time string
+ * @param {string|Date} dateString - Date to format
  * @returns {string} Formatted date and time string
  */
-export const formatDateTime = (date, locale = "en-US") => {
-  return new Date(date).toLocaleString(locale, {
+export const formatDateTime = (dateString) => {
+  if (!dateString) return "N/A";
+  return new Date(dateString).toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -43,27 +42,21 @@ export const formatDateTime = (date, locale = "en-US") => {
 };
 
 /**
- * Truncate text to specified length
- * @param {string} text - Text to truncate
- * @param {number} maxLength - Maximum length
- * @returns {string} Truncated text
+ * Map order status to a CSS class name
+ * @param {string} status - Order status (PAID, PENDING, REFUNDED, FULFILLED, etc.)
+ * @returns {string} CSS class name
  */
-export const truncateText = (text, maxLength = 100) => {
-  if (!text || text.length <= maxLength) return text;
-  return text.substring(0, maxLength).trim() + "...";
-};
-
-/**
- * Generate slug from text
- * @param {string} text - Text to convert to slug
- * @returns {string} Slug
- */
-export const slugify = (text) => {
-  return text
-    .toString()
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/[^\w-]+/g, "")
-    .replace(/--+/g, "-");
+export const getStatusColor = (status) => {
+  switch (status?.toUpperCase()) {
+    case "PAID":
+      return "status-paid";
+    case "PENDING":
+      return "status-pending";
+    case "REFUNDED":
+      return "status-refunded";
+    case "FULFILLED":
+      return "status-fulfilled";
+    default:
+      return "status-default";
+  }
 };

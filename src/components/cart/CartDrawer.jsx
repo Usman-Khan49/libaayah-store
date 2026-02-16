@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useCart } from "../../hooks/useCart";
+import { formatPrice } from "../../utils";
 import CartItem from "./CartItem";
 import "../../styles/components/CartDrawer.css";
 
@@ -30,13 +31,6 @@ export default function CartDrawer({ isOpen, onClose }) {
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose]);
-
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: price.currencyCode,
-    }).format(parseFloat(price.amount));
-  };
 
   const subtotal = getCartSubtotal();
   const itemCount = getCartItemCount();

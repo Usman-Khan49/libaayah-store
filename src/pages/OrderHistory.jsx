@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getCustomerOrders } from "../lib/shopifyCustomer";
+import { formatDate, formatPrice, getStatusColor } from "../utils";
 import { Footer } from "../components/layout";
 import "../styles/pages/OrderHistory.css";
 
@@ -35,39 +36,9 @@ const OrderHistory = () => {
     fetchOrders();
   }, [isAuthenticated, accessToken, authLoading]);
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  const formatPrice = (priceObj) => {
-    if (!priceObj) return "N/A";
-    return `${parseFloat(priceObj.amount).toLocaleString("en-PK")} Rs.`;
-  };
-
   const getStatusLabel = (status) => {
     if (!status) return "";
     return status.charAt(0) + status.slice(1).toLowerCase();
-  };
-
-  const getStatusColor = (status) => {
-    switch (status?.toUpperCase()) {
-      case "PAID":
-        return "status-paid";
-      case "PENDING":
-        return "status-pending";
-      case "REFUNDED":
-        return "status-refunded";
-      case "FULFILLED":
-        return "status-fulfilled";
-      default:
-        return "status-default";
-    }
   };
 
   if (authLoading || loading) {

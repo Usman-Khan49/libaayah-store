@@ -4,16 +4,6 @@
   overflow: hidden;
 }
 
-.reels-title {
-  text-align: center;
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  margin-top: 0;
-  color: #000;
-  font-family: var(--font-heading);
-}
-
 .reels-container {
   display: flex;
   gap: 2rem;
@@ -316,22 +306,6 @@
   transform: translateY(-1px);
 }
 
-.reel-modal-info {
-  margin-top: 1rem;
-  text-align: center;
-  color: #fff;
-}
-
-.reel-modal-info h3 {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.reel-modal-code {
-  font-size: 1rem;
-  color: #ccc;
-}
-
 .reel-modal-nav {
   position: absolute;
   top: 50%;
@@ -369,11 +343,6 @@
 @media (max-width: 768px) {
   .reels-section {
     padding: 32px 0;
-  }
-
-  .reels-title {
-    font-size: 2rem;
-    margin-bottom: 2rem;
   }
 
   .reels-container {

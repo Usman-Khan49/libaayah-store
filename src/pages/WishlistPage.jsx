@@ -4,7 +4,7 @@ import { Footer } from "../components/layout";
 import "../styles/pages/WishlistPage.css";
 
 export default function WishlistPage() {
-  const { wishlist, clearWishlist } = useWishlist();
+  const { wishlist } = useWishlist();
 
   return (
     <div className="wishlist-page">

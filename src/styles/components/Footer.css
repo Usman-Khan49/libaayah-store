@@ -59,13 +59,6 @@
   transition: max-height 0.3s ease, opacity 0.3s ease;
 }
 
-.footer-description {
-  font-size: 0.9rem;
-  line-height: 1.6;
-  color: #b0b0b0;
-  margin-bottom: 1.5rem;
-}
-
 .footer-socials {
   display: flex;
   gap: 1rem;

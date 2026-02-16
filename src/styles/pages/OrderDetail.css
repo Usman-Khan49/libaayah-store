@@ -238,31 +238,6 @@
   font-weight: bold;
 }
 
-/* Customer Info */
-.info-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.info-item {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.info-label {
-  font-weight: 500;
-  color: #374151;
-  min-width: 80px;
-}
-
-/* Addresses */
-.addresses-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
-
 .address-box {
   padding: 1rem;
   background-color: #f9fafb;
@@ -319,10 +294,6 @@
 
   .item-price {
     align-self: flex-start;
-  }
-
-  .addresses-section {
-    grid-template-columns: 1fr;
   }
 
   .status-grid {

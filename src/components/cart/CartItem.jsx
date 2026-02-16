@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useCart } from "../../hooks/useCart";
+import { formatPrice } from "../../utils";
 import { Link } from "react-router-dom";
 import "../../styles/components/CartItem.css";
 
@@ -10,13 +11,6 @@ export default function CartItem({ item }) {
   const merchandise = item.merchandise;
   const product = merchandise.product;
   const isUpdating = updatingLineId === item.id;
-
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: price.currencyCode,
-    }).format(parseFloat(price.amount));
-  };
 
   const handleQuantityChange = async (newQuantity) => {
     if (newQuantity < 1 || updatingLineId) return;

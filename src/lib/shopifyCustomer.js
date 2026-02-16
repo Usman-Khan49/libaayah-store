@@ -119,33 +119,6 @@ export async function customerAccessTokenDelete(customerAccessToken) {
   return data?.customerAccessTokenDelete?.deletedAccessToken || null;
 }
 
-/**
- * Send a password reset email to the customer
- * @param {String} email
- * @returns {Boolean} success
- */
-export async function customerRecover(email) {
-  const query = `
-    mutation customerRecover($email: String!) {
-      customerRecover(email: $email) {
-        customerUserErrors {
-          field
-          message
-          code
-        }
-      }
-    }
-  `;
-
-  const data = await shopifyFetch(query, { email });
-
-  if (data?.customerRecover?.customerUserErrors?.length > 0) {
-    throw new Error(data.customerRecover.customerUserErrors[0].message);
-  }
-
-  return true;
-}
-
 // ========================================
 // Customer Data Queries
 // ========================================
@@ -285,49 +258,4 @@ export async function getCustomerOrder(customerAccessToken, orderId) {
   // so we fetch recent orders and find the matching one
   const orders = await getCustomerOrders(customerAccessToken, 50);
   return orders.find((order) => order.id === orderId) || null;
-}
-
-/**
- * Update customer profile information
- * @param {String} customerAccessToken
- * @param {Object} input - { firstName, lastName, email, phone, password }
- * @returns {Object} updated customer
- */
-export async function customerUpdate(customerAccessToken, input) {
-  const query = `
-    mutation customerUpdate($customerAccessToken: String!, $customer: CustomerUpdateInput!) {
-      customerUpdate(customerAccessToken: $customerAccessToken, customer: $customer) {
-        customer {
-          id
-          firstName
-          lastName
-          email
-          phone
-        }
-        customerAccessToken {
-          accessToken
-          expiresAt
-        }
-        customerUserErrors {
-          field
-          message
-          code
-        }
-      }
-    }
-  `;
-
-  const data = await shopifyFetch(query, {
-    customerAccessToken,
-    customer: input,
-  });
-
-  if (data?.customerUpdate?.customerUserErrors?.length > 0) {
-    throw new Error(data.customerUpdate.customerUserErrors[0].message);
-  }
-
-  return {
-    customer: data?.customerUpdate?.customer || null,
-    accessToken: data?.customerUpdate?.customerAccessToken || null,
-  };
 }

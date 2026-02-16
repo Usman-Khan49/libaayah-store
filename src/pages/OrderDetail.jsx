@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getCustomerOrder } from "../lib/shopifyCustomer";
+import { formatDateTime, formatPrice, getStatusColor } from "../utils";
 import { Footer } from "../components/layout";
 import "../styles/pages/OrderDetail.css";
 
@@ -42,41 +43,6 @@ const OrderDetail = () => {
 
     fetchOrder();
   }, [isAuthenticated, accessToken, authLoading, orderId]);
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const formatPrice = (priceObj) => {
-    if (!priceObj) return "N/A";
-    return new Intl.NumberFormat("en-PK", {
-      style: "currency",
-      currency: priceObj.currencyCode || "PKR",
-    }).format(parseFloat(priceObj.amount));
-  };
-
-  const getStatusColor = (status) => {
-    switch (status?.toUpperCase()) {
-      case "PAID":
-        return "status-paid";
-      case "PENDING":
-        return "status-pending";
-      case "REFUNDED":
-        return "status-refunded";
-      case "FULFILLED":
-        return "status-fulfilled";
-      default:
-        return "status-default";
-    }
-  };
 
   const formatAddress = (address) => {
     if (!address) return "N/A";
@@ -153,7 +119,7 @@ const OrderDetail = () => {
           ← Back to Orders
         </Link>
         <h1>Order {order.name || `#${order.orderNumber}`}</h1>
-        <p className="order-date">Placed on {formatDate(order.processedAt)}</p>
+        <p className="order-date">Placed on {formatDateTime(order.processedAt)}</p>
       </div>
 
       <div className="order-detail-content">

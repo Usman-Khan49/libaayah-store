@@ -4,7 +4,6 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import "./styles/App.css";
 import HomePage from "./pages/Home";
 import ProductsPage from "./pages/ProductsPage";
 import ProductPage from "./pages/ProductPage";

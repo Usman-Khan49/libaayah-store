@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useState, useEffect, useCallback, createContext, useRef } from "react";
+import { useState, useEffect, useCallback, createContext } from "react";
 import {
   createCart,
   addToCart,
