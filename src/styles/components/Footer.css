@@ -167,6 +167,13 @@
   background-color: #e0e0e0;
 }
 
+.newsletter-status {
+  margin-top: 0.75rem;
+  margin-bottom: 0;
+  font-size: 0.85rem;
+  color: #ffffff;
+}
+
 .footer-bottom {
   border-top: 1px solid #333;
   padding: 1.5rem 2rem;

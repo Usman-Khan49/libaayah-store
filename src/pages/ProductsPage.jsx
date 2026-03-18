@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getAllProducts } from "../lib/shopify";
 import ProductCard from "../components/product/ProductCard";
+import Skeleton from "../components/Skeleton";
 import { Footer } from "../components/layout";
 import "../styles/pages/ProductsPage.css";
 
@@ -123,7 +124,21 @@ export default function ProductsPage() {
   };
 
   if (loading) {
-    return <div className="loading">Loading...</div>;
+    return (
+      <div className="products-page">
+        <div className="skeleton-page" style={{ marginTop: "120px" }}>
+          <div className="skeleton-header-row">
+            <Skeleton className="skeleton-title" />
+            <Skeleton className="skeleton-chip" />
+          </div>
+          <div className="skeleton-grid">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <Skeleton key={index} className="skeleton-card" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

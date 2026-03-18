@@ -98,6 +98,8 @@ export default function HomePage() {
               src={unstitchedImg}
               alt="Unstitched Collection"
               className="category-image"
+              loading="lazy"
+              decoding="async"
             />
             <div className="category-overlay">
               <h2 className="category-title">Unstitched</h2>
@@ -112,6 +114,8 @@ export default function HomePage() {
               src={winterImg}
               alt="Winter Collection"
               className="category-image"
+              loading="lazy"
+              decoding="async"
             />
             <div className="category-overlay">
               <h2 className="category-title">Winter</h2>
@@ -126,6 +130,8 @@ export default function HomePage() {
               src={summerImg}
               alt="Summer Collection"
               className="category-image"
+              loading="lazy"
+              decoding="async"
             />
             <div className="category-overlay">
               <h2 className="category-title">Summer</h2>
@@ -144,6 +150,7 @@ export default function HomePage() {
             loop
             playsInline
             autoPlay
+            preload="metadata"
           >
             <source src={showcaseVideo} type="video/mp4" />
           </video>

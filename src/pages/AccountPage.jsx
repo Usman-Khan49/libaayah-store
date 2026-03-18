@@ -1,5 +1,6 @@
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import Skeleton from "../components/Skeleton";
 import { Footer } from "../components/layout";
 import "../styles/pages/AccountPage.css";
 
@@ -11,7 +12,15 @@ export default function AccountPage() {
     return (
       <div className="account-page">
         <div className="account-container">
-          <p className="account-loading">Loading...</p>
+          <div className="skeleton-header-row">
+            <Skeleton className="skeleton-title" />
+            <Skeleton className="skeleton-chip" />
+          </div>
+          <div className="skeleton-list" style={{ marginTop: "20px" }}>
+            <Skeleton className="skeleton-row" />
+            <Skeleton className="skeleton-row" />
+            <Skeleton className="skeleton-row" />
+          </div>
         </div>
       </div>
     );

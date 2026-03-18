@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useWishlist } from "../../context/WishlistContext";
 import { useCart } from "../../hooks/useCart";
 import { useState } from "react";
+import { formatPrice } from "../../utils";
 import "../../styles/components/ProductCard.css";
 import heartIcon from "../../assets/heart.png";
 import heartEnabledIcon from "../../assets/heartEnabled.png";
@@ -11,6 +12,8 @@ export default function ProductCard({ product }) {
   const { addItem } = useCart();
   const inWishlist = isInWishlist(product.id);
   const [isHovered, setIsHovered] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [isAdded, setIsAdded] = useState(false);
 
   const handleWishlistClick = (e) => {
     e.preventDefault();
@@ -26,8 +29,17 @@ export default function ProductCard({ product }) {
     e.preventDefault();
     e.stopPropagation();
     const variantId = product.variants.edges[0]?.node.id;
-    if (variantId) {
+    if (!variantId || isAdding) return;
+
+    try {
+      setIsAdding(true);
       await addItem(variantId, 1);
+      setIsAdded(true);
+      setTimeout(() => setIsAdded(false), 1500);
+    } catch (error) {
+      console.error("Failed to add item to cart:", error);
+    } finally {
+      setIsAdding(false);
     }
   };
 
@@ -45,15 +57,18 @@ export default function ProductCard({ product }) {
           src={product.images.edges[0]?.node.url}
           alt={product.title || "Product"}
           className="productImage"
+          loading="lazy"
+          decoding="async"
         />
         {/* Add to Cart Button on Hover */}
         {isHovered && (
           <button
-            className="add-to-cart-overlay"
+            className={`add-to-cart-overlay ${isAdded ? "added" : ""}`}
             onClick={handleAddToCart}
             aria-label="Add to cart"
+            disabled={isAdding}
           >
-            Add to Cart
+            {isAdding ? "Adding..." : isAdded ? "Added ✓" : "Add to Cart"}
           </button>
         )}
       </div>
@@ -62,9 +77,7 @@ export default function ProductCard({ product }) {
       <div className="productDetail">
         <div className="productInfo">
           <div className="productTitle">{product.title}</div>
-          <div className="productPrice">
-            Rs. {product.variants.edges[0]?.node.price.amount}
-          </div>
+          <div className="productPrice">{formatPrice(product.variants.edges[0]?.node.price)}</div>
         </div>
         {/* Wishlist Button */}
         <button
@@ -72,7 +85,12 @@ export default function ProductCard({ product }) {
           onClick={handleWishlistClick}
           aria-label="Add to wishlist"
         >
-          <img src={inWishlist ? heartEnabledIcon : heartIcon} alt="Wishlist" />
+          <img
+            src={inWishlist ? heartEnabledIcon : heartIcon}
+            alt="Wishlist"
+            loading="lazy"
+            decoding="async"
+          />
         </button>
       </div>
     </Link>

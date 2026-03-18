@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useCart } from "../../hooks/useCart";
 import { formatPrice } from "../../utils";
+import Skeleton from "../Skeleton";
 import CartItem from "./CartItem";
 import "../../styles/components/CartDrawer.css";
 
@@ -72,8 +73,11 @@ export default function CartDrawer({ isOpen, onClose }) {
 
         {loading ? (
           <div className="cart-loading">
-            <div className="spinner"></div>
-            <p>Loading cart...</p>
+            <div className="skeleton-list" style={{ width: "100%" }}>
+              <Skeleton className="skeleton-row" />
+              <Skeleton className="skeleton-row" />
+              <Skeleton className="skeleton-row" />
+            </div>
           </div>
         ) : cartLines.length === 0 ? (
           <div className="cart-empty">

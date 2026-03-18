@@ -66,6 +66,8 @@ export const CartProvider = ({ children }) => {
 
   // Add item to cart
   const addItem = async (merchandiseId, quantity = 1) => {
+    let resultingCart = null;
+
     try {
       setLoading(true);
       setError(null);
@@ -76,6 +78,7 @@ export const CartProvider = ({ children }) => {
         try {
           const updatedCart = await addToCart(cartId, lines);
           setCart(updatedCart);
+          resultingCart = updatedCart;
         } catch (err) {
           // If cart doesn't exist, clear old ID and create new cart
           if (
@@ -88,6 +91,7 @@ export const CartProvider = ({ children }) => {
             const newCart = await createCart(lines);
             setCart(newCart);
             saveCartId(newCart.id);
+            resultingCart = newCart;
           } else {
             throw err;
           }
@@ -96,7 +100,10 @@ export const CartProvider = ({ children }) => {
         const newCart = await createCart(lines);
         setCart(newCart);
         saveCartId(newCart.id);
+        resultingCart = newCart;
       }
+
+      return resultingCart;
     } catch (err) {
       console.error("Error adding item to cart:", err);
       setError(err.message);
