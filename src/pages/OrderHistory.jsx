@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getCustomerOrders } from "../lib/shopifyCustomer";
 import { formatDate, formatPrice, getStatusColor } from "../utils";
+import Skeleton from "../components/Skeleton";
 import { Footer } from "../components/layout";
 import "../styles/pages/OrderHistory.css";
 
@@ -48,8 +49,10 @@ const OrderHistory = () => {
           <h1 className="orders-title">ORDER HISTORY</h1>
         </div>
         <div className="orders-content">
-          <div className="orders-empty">
-            <p>Loading your orders...</p>
+          <div className="skeleton-list">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton key={index} className="skeleton-row" />
+            ))}
           </div>
         </div>
         <Footer />

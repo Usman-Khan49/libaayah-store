@@ -54,6 +54,16 @@
   color: #FFFFFF;
 }
 
+.add-to-cart-overlay:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.add-to-cart-overlay.added {
+  background-color: #000000;
+  color: #FFFFFF;
+}
+
 /* Product Details Section */
 .productDetail {
   padding: 12px 16px;

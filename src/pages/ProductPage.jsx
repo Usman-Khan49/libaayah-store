@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import { getProduct, getAllProducts } from "../lib/shopify";
 import { useCart } from "../hooks/useCart";
 import { useWishlist } from "../context/WishlistContext";
+import { formatPrice } from "../utils";
+import Skeleton from "../components/Skeleton";
 import ProductCard from "../components/product/ProductCard";
 import { Footer } from "../components/layout";
 import "../styles/pages/ProductPage.css";
@@ -22,6 +24,7 @@ export default function ProductPage() {
   const [quantity, setQuantity] = useState(1);
   const [descriptionOpen, setDescriptionOpen] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [buyingNow, setBuyingNow] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
 
   useEffect(() => {
@@ -65,6 +68,27 @@ export default function ProductPage() {
     }
   };
 
+  const handleBuyNow = async () => {
+    if (!product) return;
+
+    const variant = product.variants.edges[0]?.node;
+    if (!variant) return;
+
+    try {
+      setBuyingNow(true);
+      const cartData = await addItem(variant.id, quantity);
+      if (cartData?.checkoutUrl) {
+        window.location.href = cartData.checkoutUrl;
+        return;
+      }
+      console.error("No checkout URL found after adding item.");
+    } catch (error) {
+      console.error("Failed to process Buy Now:", error);
+    } finally {
+      setBuyingNow(false);
+    }
+  };
+
   const handleWishlistToggle = () => {
     if (isInWishlist(product.id)) {
       removeFromWishlist(product.id);
@@ -80,7 +104,25 @@ export default function ProductPage() {
   if (loading) {
     return (
       <div className="product-page-container">
-        <div className="loading">Loading...</div>
+        <div className="skeleton-page" style={{ marginTop: "24px" }}>
+          <Skeleton className="skeleton-subtitle" />
+          <div className="skeleton-product-layout">
+            <div className="skeleton-gallery">
+              <Skeleton className="skeleton-gallery-item" />
+              <Skeleton className="skeleton-gallery-item" />
+              <Skeleton className="skeleton-gallery-item" />
+              <Skeleton className="skeleton-gallery-item" />
+            </div>
+            <div className="skeleton-details">
+              <Skeleton className="skeleton-title" />
+              <Skeleton className="skeleton-line short" />
+              <Skeleton className="skeleton-line" />
+              <Skeleton className="skeleton-line" />
+              <Skeleton className="skeleton-button" />
+              <Skeleton className="skeleton-button" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -94,7 +136,7 @@ export default function ProductPage() {
   }
 
   const images = product.images?.edges || [];
-  const price = product.variants.edges[0]?.node.price.amount;
+  const price = product.variants.edges[0]?.node.price;
   const inWishlist = isInWishlist(product.id);
 
   return (
@@ -148,9 +190,7 @@ export default function ProductPage() {
         {/* Product Details Column */}
         <div className="product-details">
           <h1 className="product-title">{product.title}</h1>
-          <p className="product-price">
-            Rs. {parseFloat(price).toLocaleString("en-PK")}
-          </p>
+          <p className="product-price">{formatPrice(price)}</p>
 
           <div className="divider"></div>
 
@@ -207,14 +247,10 @@ export default function ProductPage() {
           </div>
           <button
             className="Buy-Now-Btn"
-            onClick={handleAddToCart}
-            disabled={addingToCart}
+            onClick={handleBuyNow}
+            disabled={buyingNow || addingToCart}
           >
-            {addingToCart
-              ? "Processing..."
-              : addedToCart
-              ? "Added to Cart ✓"
-              : "Buy Now"}
+            {buyingNow ? "Redirecting to Checkout..." : "Buy Now"}
           </button>
           {/* Shipping Info Box */}
           <div className="shipping-info-box">

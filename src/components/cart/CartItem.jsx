@@ -39,6 +39,8 @@ export default function CartItem({ item }) {
             <img
               src={product.featuredImage.url}
               alt={product.featuredImage.altText || product.title}
+              loading="lazy"
+              decoding="async"
             />
           ) : (
             <div className="no-image">No image</div>

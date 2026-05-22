@@ -100,6 +100,8 @@ export default function HomePage() {
               src={unstitchedImg}
               alt="Unstitched Collection"
               className="category-image"
+              loading="lazy"
+              decoding="async"
             />
             <div className="category-overlay">
               <h2 className="category-title">Unstitched</h2>
@@ -111,6 +113,8 @@ export default function HomePage() {
               src={winterImg}
               alt="Winter Collection"
               className="category-image"
+              loading="lazy"
+              decoding="async"
             />
             <div className="category-overlay">
               <h2 className="category-title">Winter</h2>
@@ -122,6 +126,8 @@ export default function HomePage() {
               src={summerImg}
               alt="Summer Collection"
               className="category-image"
+              loading="lazy"
+              decoding="async"
             />
             <div className="category-overlay">
               <h2 className="category-title">Summer</h2>
@@ -134,7 +140,18 @@ export default function HomePage() {
       {/* Showcase Video + CTA Section */}
       <section className="showcase-section">
         <div className="showcase-video-wrapper">
+<<<<<<< HEAD
           <video className="showcase-video" muted loop playsInline autoPlay>
+=======
+          <video
+            className="showcase-video"
+            muted
+            loop
+            playsInline
+            autoPlay
+            preload="metadata"
+          >
+>>>>>>> a7526da90352c75c88684e785e2b5140438cff58
             <source src={showcaseVideo} type="video/mp4" />
           </video>
         </div>

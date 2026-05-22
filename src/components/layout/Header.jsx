@@ -12,6 +12,7 @@ import { useCart } from "../../hooks/useCart";
 import CartDrawer from "../cart/CartDrawer";
 import "../../styles/components/Header.css";
 import logoImg from "../../assets/Logo.png";
+import collectionImg from "../../assets/img36.jpg";
 import userIcon from "../../assets/user.png";
 import heartIcon from "../../assets/heart.png";
 import cartIcon from "../../assets/cart.png";
@@ -169,7 +170,7 @@ export default function Header() {
               <div className="mega-menu-content">
                 {/* Column 1: Featured Image */}
                 <div className="mega-menu-image">
-                  <img src="/src/assets/img36.jpg" alt="Collection" />
+                  <img src={collectionImg} alt="Collection" loading="lazy" decoding="async" />
                 </div>
 
                 {visibleCollections.map((collection) => {
@@ -237,10 +238,10 @@ export default function Header() {
             className="icon-btn"
             aria-label="User Profile"
           >
-            <img src={userIcon} alt="User" />
+            <img src={userIcon} alt="User" loading="lazy" decoding="async" />
           </Link>
           <Link to="/wishlist" className="icon-btn" aria-label="Wishlist">
-            <img src={heartIcon} alt="Wishlist" />
+            <img src={heartIcon} alt="Wishlist" loading="lazy" decoding="async" />
             {wishlistCount > 0 && (
               <span className="icon-badge">{wishlistCount}</span>
             )}
@@ -250,7 +251,7 @@ export default function Header() {
             aria-label="Shopping Bag"
             onClick={() => setCartOpen(true)}
           >
-            <img src={cartIcon} alt="Cart" />
+            <img src={cartIcon} alt="Cart" loading="lazy" decoding="async" />
             {cartCount > 0 && <span className="icon-badge">{cartCount}</span>}
           </button>
         </div>
@@ -376,7 +377,7 @@ export default function Header() {
               className="mobile-profile-btn"
               onClick={toggleMenu}
             >
-              <img src={userIcon} alt="User" />
+              <img src={userIcon} alt="User" loading="lazy" decoding="async" />
               <span>{isAuthenticated ? "My Account" : "Sign In"}</span>
             </Link>
             <div className="mobile-nav-link nav-contact">

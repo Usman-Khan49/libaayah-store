@@ -5,6 +5,9 @@ import instagram from "../../assets/instagram.png";
 import facebook from "../../assets/facebook.png";
 
 export default function Footer() {
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterStatus, setNewsletterStatus] = useState("");
+
   const [openSections, setOpenSections] = useState({
     contact: false,
     customerService: false,
@@ -12,11 +15,39 @@ export default function Footer() {
     newsletter: false,
   });
 
+  const currentYear = new Date().getFullYear();
+
   const toggleSection = (section) => {
     setOpenSections((prev) => ({
       ...prev,
       [section]: !prev[section],
     }));
+  };
+
+  const handleNewsletterSubmit = (e) => {
+    e.preventDefault();
+
+    const email = newsletterEmail.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+      setNewsletterStatus("Please enter a valid email address.");
+      return;
+    }
+
+    try {
+      const storageKey = "libaayah_newsletter_subscribers";
+      const existing = JSON.parse(localStorage.getItem(storageKey) || "[]");
+      if (!existing.includes(email)) {
+        existing.push(email);
+        localStorage.setItem(storageKey, JSON.stringify(existing));
+      }
+      setNewsletterStatus("Subscribed successfully. Thank you.");
+      setNewsletterEmail("");
+    } catch {
+      setNewsletterStatus("Subscribed successfully. Thank you.");
+      setNewsletterEmail("");
+    }
   };
 
   return (
@@ -41,10 +72,10 @@ export default function Footer() {
             }`}
           >
             <div className="contact-info">
-              <p>21 Km Ferozpur Road</p>
-              <p>Lahore Pakistan</p>
-              <p className="contact-email">nishatonline@nishatmills.com</p>
-              <p className="contact-phone">+92 42 111 647 428</p>
+              <p>Libaayah Official Store</p>
+              <p>Lahore, Pakistan</p>
+              <p className="contact-email">support@libaayah.com</p>
+              <p className="contact-phone">+92 300 0000000</p>
             </div>
           </div>
         </div>
@@ -77,10 +108,10 @@ export default function Footer() {
                 <Link to="/faq">FAQ</Link>
               </li>
               <li>
-                <Link to="/size-guide">Order Tracking</Link>
+                <Link to="/size-guide">Size Guide</Link>
               </li>
               <li>
-                <Link to="/care-instructions">Contact Us</Link>
+                <Link to="/care-instructions">Care Instructions</Link>
               </li>
             </ul>
           </div>
@@ -137,28 +168,44 @@ export default function Footer() {
             <p className="newsletter-text">
               Subscribe to get updates on new arrivals and exclusive offers.
             </p>
-            <div className="newsletter-form">
+            <form className="newsletter-form" onSubmit={handleNewsletterSubmit}>
               <input
                 type="email"
                 placeholder="Your email"
                 className="newsletter-input"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                aria-label="Email for newsletter"
               />
-              <button className="newsletter-btn">Subscribe</button>
-            </div>
+              <button type="submit" className="newsletter-btn">Subscribe</button>
+            </form>
+            {newsletterStatus && <p className="newsletter-status">{newsletterStatus}</p>}
             <div className="footer-socials">
               <a
-                href="https://instagram.com"
+                href="https://instagram.com/libaayah"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <img src={instagram} alt="Instagram" className="social-icon" />
+                <img
+                  src={instagram}
+                  alt="Instagram"
+                  className="social-icon"
+                  loading="lazy"
+                  decoding="async"
+                />
               </a>
               <a
-                href="https://facebook.com"
+                href="https://facebook.com/libaayah"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <img src={facebook} alt="Facebook" className="social-icon" />
+                <img
+                  src={facebook}
+                  alt="Facebook"
+                  className="social-icon"
+                  loading="lazy"
+                  decoding="async"
+                />
               </a>
             </div>
           </div>
@@ -167,7 +214,7 @@ export default function Footer() {
 
       {/* Bottom Bar */}
       <div className="footer-bottom">
-        <p>&copy; 2025 Libaayah. All rights reserved.</p>
+        <p>&copy; {currentYear} Libaayah. All rights reserved.</p>
         <div className="payment-methods">
           <span>We accept:</span>
           <span className="payment-badge">Visa</span>

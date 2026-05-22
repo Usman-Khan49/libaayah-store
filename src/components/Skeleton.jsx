@@ -1,0 +1,11 @@
+import "../styles/components/Skeleton.css";
+
+export default function Skeleton({ className = "", style }) {
+  return (
+    <div
+      className={`skeleton ${className}`.trim()}
+      style={style}
+      aria-hidden="true"
+    />
+  );
+}

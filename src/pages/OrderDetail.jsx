@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getCustomerOrder } from "../lib/shopifyCustomer";
 import { formatDateTime, formatPrice, getStatusColor } from "../utils";
+import Skeleton from "../components/Skeleton";
 import { Footer } from "../components/layout";
 import "../styles/pages/OrderDetail.css";
 
@@ -60,9 +61,11 @@ const OrderDetail = () => {
   if (authLoading || loading) {
     return (
       <div className="order-detail-container">
-        <div className="loading-state">
-          <div className="spinner"></div>
-          <p>Loading order details...</p>
+        <div className="skeleton-list">
+          <Skeleton className="skeleton-title" />
+          <Skeleton className="skeleton-row" />
+          <Skeleton className="skeleton-row" />
+          <Skeleton className="skeleton-row" />
         </div>
       </div>
     );

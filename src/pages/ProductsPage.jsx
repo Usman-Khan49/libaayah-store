@@ -7,6 +7,7 @@ import {
   buildCollectionSearchQueries,
 } from "../lib/shopify";
 import ProductCard from "../components/product/ProductCard";
+import Skeleton from "../components/Skeleton";
 import { Footer } from "../components/layout";
 import "../styles/pages/ProductsPage.css";
 
@@ -347,6 +348,7 @@ export default function ProductsPage() {
     });
   };
 
+<<<<<<< HEAD
   const handlePriceRangeChange = (min, max) => {
     const nextMin = min === "" ? null : parseFloat(min);
     const nextMax = max === "" ? null : parseFloat(max);
@@ -386,6 +388,24 @@ export default function ProductsPage() {
 
   if (loading && products.length === 0) {
     return <div className="loading">Loading...</div>;
+=======
+  if (loading) {
+    return (
+      <div className="products-page">
+        <div className="skeleton-page" style={{ marginTop: "120px" }}>
+          <div className="skeleton-header-row">
+            <Skeleton className="skeleton-title" />
+            <Skeleton className="skeleton-chip" />
+          </div>
+          <div className="skeleton-grid">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <Skeleton key={index} className="skeleton-card" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+>>>>>>> a7526da90352c75c88684e785e2b5140438cff58
   }
 
   return (

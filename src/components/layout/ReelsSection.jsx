@@ -165,6 +165,7 @@ export default function ReelsSection() {
                 muted
                 loop
                 playsInline
+                preload="none"
                 onLoadedData={(e) => {
                   e.target.play().catch((err) => {
                     console.log("Autoplay blocked:", err);
@@ -181,6 +182,8 @@ export default function ReelsSection() {
                 src={reel.thumbnail}
                 alt={reel.productName}
                 className="reel-fallback"
+                loading="lazy"
+                decoding="async"
               />
 
               {/* Simple overlay with product code */}
@@ -249,6 +252,7 @@ export default function ReelsSection() {
                 loop
                 playsInline
                 muted={isMuted}
+                preload="metadata"
                 controlsList="nodownload nofullscreen noremoteplayback"
                 disablePictureInPicture
                 onContextMenu={(e) => e.preventDefault()}
@@ -283,6 +287,8 @@ export default function ReelsSection() {
                     src={reels[selectedReel].thumbnail}
                     alt={reels[selectedReel].productName}
                     className="reel-product-thumb"
+                    loading="lazy"
+                    decoding="async"
                   />
                   <div className="reel-product-details">
                     <p className="reel-product-code">
