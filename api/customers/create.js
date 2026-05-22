@@ -1,4 +1,3 @@
-// Vercel Serverless Function for Customer Creation via Shopify Admin API
 export default async function handler(req, res) {
   // CORS headers
   const origin = req.headers.origin;

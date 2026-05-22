@@ -13,9 +13,9 @@ import summerImg from "../assets/img109.jpg";
 import "../styles/pages/HomePage.css";
 
 const categories = [
-  { key: "unstitched", label: "Unstitched", link: "/products?category=unstitched" },
-  { key: "winter", label: "Winter", link: "/products?category=winter" },
-  { key: "summer", label: "Summer", link: "/products?category=summer" },
+  { key: "unstitched", label: "Unstitched", link: "/products" },
+  { key: "winter", label: "Winter", link: "/products?collection=winter" },
+  { key: "summer", label: "Summer", link: "/products?collection=summer" },
 ];
 
 export default function HomePage() {
@@ -56,7 +56,9 @@ export default function HomePage() {
 
       {/* Collection Tabs Section */}
       <section className="collection-tabs-section">
-        <h2 className="collection-tabs-heading">Discover Our Most Popular Picks</h2>
+        <h2 className="collection-tabs-heading">
+          Discover Our Most Popular Picks
+        </h2>
 
         {/* Category Tabs */}
         <div className="collection-tabs">
@@ -79,7 +81,10 @@ export default function HomePage() {
 
         {/* View All Button */}
         <div className="collection-view-all">
-          <Link to={activeCategoryData?.link || "/products"} className="view-all-btn">
+          <Link
+            to={activeCategoryData?.link || "/products"}
+            className="view-all-btn"
+          >
             View All
           </Link>
         </div>
@@ -90,10 +95,7 @@ export default function HomePage() {
         <h2 className="home-section-heading">Shop by Category</h2>
         <p className="home-section-subheading">Find your perfect piece</p>
         <div className="hero-categories">
-          <Link
-            to="/products?category=unstitched"
-            className="category-box"
-          >
+          <Link to="/products" className="category-box">
             <img
               src={unstitchedImg}
               alt="Unstitched Collection"
@@ -104,10 +106,7 @@ export default function HomePage() {
               <p className="category-shop-now">Shop Now</p>
             </div>
           </Link>
-          <Link
-            to="/products?category=winter"
-            className="category-box"
-          >
+          <Link to="/products?collection=winter" className="category-box">
             <img
               src={winterImg}
               alt="Winter Collection"
@@ -118,10 +117,7 @@ export default function HomePage() {
               <p className="category-shop-now">Shop Now</p>
             </div>
           </Link>
-          <Link
-            to="/products?category=summer"
-            className="category-box"
-          >
+          <Link to="/products?collection=summer" className="category-box">
             <img
               src={summerImg}
               alt="Summer Collection"
@@ -138,21 +134,16 @@ export default function HomePage() {
       {/* Showcase Video + CTA Section */}
       <section className="showcase-section">
         <div className="showcase-video-wrapper">
-          <video
-            className="showcase-video"
-            muted
-            loop
-            playsInline
-            autoPlay
-          >
+          <video className="showcase-video" muted loop playsInline autoPlay>
             <source src={showcaseVideo} type="video/mp4" />
           </video>
         </div>
         <div className="showcase-text">
           <h2 className="showcase-heading">Crafted with Passion</h2>
           <p className="showcase-description">
-            Every piece in our collection tells a story of tradition, elegance, and meticulous craftsmanship. 
-            Discover fabrics that drape beautifully and designs that turn heads.
+            Every piece in our collection tells a story of tradition, elegance,
+            and meticulous craftsmanship. Discover fabrics that drape
+            beautifully and designs that turn heads.
           </p>
           <Link to="/products" className="showcase-cta">
             Explore the Collection

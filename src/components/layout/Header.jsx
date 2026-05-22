@@ -1,5 +1,11 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import {
+  getCollections,
+  getSearchProductFilters,
+  getCollectionProductFilters,
+  buildCollectionSearchQueries,
+} from "../../lib/shopify";
 import { useWishlist } from "../../context/WishlistContext";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../hooks/useCart";
@@ -9,6 +15,35 @@ import logoImg from "../../assets/Logo.png";
 import userIcon from "../../assets/user.png";
 import heartIcon from "../../assets/heart.png";
 import cartIcon from "../../assets/cart.png";
+
+const parseFilterInput = (input) => {
+  try {
+    return JSON.parse(input);
+  } catch {
+    return null;
+  }
+};
+
+const normalizeValue = (value) =>
+  value
+    ?.toString()
+    .toLowerCase()
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const getFabricValues = (filters) => {
+  const fabricFilter = filters.find((filter) => {
+    if (normalizeValue(filter.label)?.includes("fabric")) return true;
+    return (filter.values || []).some((val) => {
+      const parsed = parseFilterInput(val.input);
+      return parsed?.productMetafield?.key === "fabric";
+    });
+  });
+
+  const values = fabricFilter?.values || [];
+  return [...values].sort((a, b) => a.label.localeCompare(b.label));
+};
 
 export default function Header() {
   const { getWishlistCount } = useWishlist();
@@ -20,11 +55,88 @@ export default function Header() {
   const [cartOpen, setCartOpen] = useState(false);
   const [collectionOpen, setCollectionOpen] = useState(false);
   const [mobileCollectionOpen, setMobileCollectionOpen] = useState(false);
-  const [mobileSummerOpen, setMobileSummerOpen] = useState(false);
-  const [mobileWinterOpen, setMobileWinterOpen] = useState(false);
+  const [collections, setCollections] = useState([]);
+  const [collectionFacets, setCollectionFacets] = useState({});
+  const [mobileSectionOpen, setMobileSectionOpen] = useState({});
+
+  const saleCollection = collections.find(
+    (collection) => collection.handle === "sale",
+  );
+  const visibleCollections = collections.filter(
+    (collection) => collection.handle !== "sale",
+  );
+
+  useEffect(() => {
+    const fetchCollections = async () => {
+      try {
+        const data = await getCollections(20);
+        setCollections(data);
+      } catch (error) {
+        console.error("Error fetching collections:", error);
+      }
+    };
+
+    fetchCollections();
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const scopedCollections = collections.filter(
+      (collection) => collection.handle !== "sale",
+    );
+
+    if (scopedCollections.length === 0) {
+      setCollectionFacets({});
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const fetchCollectionFilters = async () => {
+      try {
+        const entries = await Promise.all(
+          scopedCollections.map(async (collection) => {
+            let filters = await getCollectionProductFilters(collection.handle);
+
+            if (!filters.length) {
+              const fallbackQueries = buildCollectionSearchQueries(
+                collection.handle,
+                collection.id,
+              );
+              filters = await getSearchProductFilters(fallbackQueries);
+            }
+
+            const fabricValues = getFabricValues(filters);
+            return [collection.handle, fabricValues];
+          }),
+        );
+
+        if (!cancelled) {
+          setCollectionFacets(Object.fromEntries(entries));
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Error fetching collection filters:", error);
+        }
+      }
+    };
+
+    fetchCollectionFilters();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [collections]);
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
+  };
+
+  const toggleMobileSection = (handle) => {
+    setMobileSectionOpen((prev) => ({
+      ...prev,
+      [handle]: !prev[handle],
+    }));
   };
 
   return (
@@ -43,7 +155,7 @@ export default function Header() {
 
         {/* Left Section - Navigation Links */}
         <nav className="header-left desktop-only">
-          <div 
+          <div
             className="nav-item-wrapper"
             onMouseEnter={() => setCollectionOpen(true)}
             onMouseLeave={() => setCollectionOpen(false)}
@@ -51,47 +163,47 @@ export default function Header() {
             <Link to="/products" className="nav-link">
               Collection
             </Link>
-            
+
             {/* Mega Dropdown Menu */}
-            <div className={`mega-menu ${collectionOpen ? 'open' : ''}`}>
+            <div className={`mega-menu ${collectionOpen ? "open" : ""}`}>
               <div className="mega-menu-content">
                 {/* Column 1: Featured Image */}
                 <div className="mega-menu-image">
                   <img src="/src/assets/img36.jpg" alt="Collection" />
                 </div>
-                
-                {/* Column 2: Summer */}
-                <div className="mega-menu-column">
-                  <Link to="/products?category=summer" className="mega-menu-title">
-                    Summer
-                  </Link>
-                  <ul className="mega-menu-list">
-                    <li><Link to="/products?category=summer&fabric=lawn">Lawn</Link></li>
-                    <li><Link to="/products?category=summer&fabric=linen">Linen</Link></li>
-                    <li><Link to="/products?category=summer&fabric=cotton">Cotton</Link></li>
-                  </ul>
-                </div>
-                
-                {/* Column 3: Winter */}
-                <div className="mega-menu-column">
-                  <Link to="/products?category=winter" className="mega-menu-title">
-                    Winter
-                  </Link>
-                  <ul className="mega-menu-list">
-                    <li><Link to="/products?category=winter&fabric=khaddar">Khaddar</Link></li>
-                    <li><Link to="/products?category=winter&fabric=karandi">Karandi</Link></li>
-                    <li><Link to="/products?category=winter&fabric=velvet">Velvet</Link></li>
-                  </ul>
-                </div>
-                
-                {/* Column 4: New Arrivals */}
-                <div className="mega-menu-column">
-                  <Link to="/products?sort=new" className="mega-menu-title">
-                    New Arrivals
-                  </Link>
-                </div>
-                
-                {/* Column 5: Shop All */}
+
+                {visibleCollections.map((collection) => {
+                  const fabricValues =
+                    collectionFacets[collection.handle] || [];
+
+                  return (
+                    <div key={collection.id} className="mega-menu-column">
+                      <Link
+                        to={`/products?collection=${collection.handle}`}
+                        className="mega-menu-title"
+                      >
+                        {collection.title}
+                      </Link>
+                      <ul className="mega-menu-list">
+                        {fabricValues.length > 0 ? (
+                          fabricValues.map((value) => (
+                            <li key={value.id}>
+                              <Link
+                                to={`/products?collection=${collection.handle}&fabric=${encodeURIComponent(value.label)}`}
+                              >
+                                {value.label}
+                              </Link>
+                            </li>
+                          ))
+                        ) : (
+                          <li>No fabrics yet</li>
+                        )}
+                      </ul>
+                    </div>
+                  );
+                })}
+
+                {/* Shop All */}
                 <div className="mega-menu-column">
                   <Link to="/products" className="mega-menu-title">
                     Shop All
@@ -100,10 +212,15 @@ export default function Header() {
               </div>
             </div>
           </div>
-          
-          <Link to="/products?sale=true" className="nav-link sale">
-            Sale
-          </Link>
+
+          {saleCollection && (
+            <Link
+              to={`/products?collection=${saleCollection.handle}`}
+              className="nav-link sale"
+            >
+              {saleCollection.title}
+            </Link>
+          )}
         </nav>
 
         {/* Center Section - Logo Only */}
@@ -128,8 +245,8 @@ export default function Header() {
               <span className="icon-badge">{wishlistCount}</span>
             )}
           </Link>
-          <button 
-            className="icon-btn" 
+          <button
+            className="icon-btn"
             aria-label="Shopping Bag"
             onClick={() => setCartOpen(true)}
           >
@@ -157,77 +274,84 @@ export default function Header() {
           <nav className="mobile-nav">
             {/* Collection with Dropdown */}
             <div className="mobile-nav-item">
-              <div 
+              <div
                 className="mobile-nav-link with-dropdown"
                 onClick={() => setMobileCollectionOpen(!mobileCollectionOpen)}
               >
                 <span>Collection</span>
-                <span className={`dropdown-arrow ${mobileCollectionOpen ? 'open' : ''}`}>▼</span>
+                <span
+                  className={`dropdown-arrow ${mobileCollectionOpen ? "open" : ""}`}
+                >
+                  ▼
+                </span>
               </div>
-              
+
               {/* Subcategories Dropdown */}
-              <div className={`mobile-dropdown ${mobileCollectionOpen ? 'open' : ''}`}>
-                {/* Summer with nested dropdown */}
-                <div className="mobile-dropdown-section">
-                  <div 
-                    className="mobile-dropdown-title with-dropdown"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setMobileSummerOpen(!mobileSummerOpen);
-                    }}
-                  >
-                    <span>Summer</span>
-                    <span className={`dropdown-arrow ${mobileSummerOpen ? 'open' : ''}`}>▼</span>
-                  </div>
-                  <div className={`mobile-nested-dropdown ${mobileSummerOpen ? 'open' : ''}`}>
-                    <Link to="/products?category=summer&fabric=lawn" className="mobile-dropdown-link" onClick={toggleMenu}>
-                      Lawn
-                    </Link>
-                    <Link to="/products?category=summer&fabric=linen" className="mobile-dropdown-link" onClick={toggleMenu}>
-                      Linen
-                    </Link>
-                    <Link to="/products?category=summer&fabric=cotton" className="mobile-dropdown-link" onClick={toggleMenu}>
-                      Cotton
-                    </Link>
-                  </div>
-                </div>
-                
-                {/* Winter with nested dropdown */}
-                <div className="mobile-dropdown-section">
-                  <div 
-                    className="mobile-dropdown-title with-dropdown"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setMobileWinterOpen(!mobileWinterOpen);
-                    }}
-                  >
-                    <span>Winter</span>
-                    <span className={`dropdown-arrow ${mobileWinterOpen ? 'open' : ''}`}>▼</span>
-                  </div>
-                  <div className={`mobile-nested-dropdown ${mobileWinterOpen ? 'open' : ''}`}>
-                    <Link to="/products?category=winter&fabric=khaddar" className="mobile-dropdown-link" onClick={toggleMenu}>
-                      Khaddar
-                    </Link>
-                    <Link to="/products?category=winter&fabric=karandi" className="mobile-dropdown-link" onClick={toggleMenu}>
-                      Karandi
-                    </Link>
-                    <Link to="/products?category=winter&fabric=velvet" className="mobile-dropdown-link" onClick={toggleMenu}>
-                      Velvet
-                    </Link>
-                  </div>
-                </div>
+              <div
+                className={`mobile-dropdown ${mobileCollectionOpen ? "open" : ""}`}
+              >
+                {visibleCollections.map((collection) => {
+                  const fabricValues =
+                    collectionFacets[collection.handle] || [];
+                  const sectionOpen = mobileSectionOpen[collection.handle];
+
+                  return (
+                    <div
+                      key={collection.id}
+                      className="mobile-dropdown-section"
+                    >
+                      <div
+                        className="mobile-dropdown-title with-dropdown"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          toggleMobileSection(collection.handle);
+                        }}
+                      >
+                        <span>{collection.title}</span>
+                        <span
+                          className={`dropdown-arrow ${sectionOpen ? "open" : ""}`}
+                        >
+                          ▼
+                        </span>
+                      </div>
+                      <div
+                        className={`mobile-nested-dropdown ${sectionOpen ? "open" : ""}`}
+                      >
+                        <Link
+                          to={`/products?collection=${collection.handle}`}
+                          className="mobile-dropdown-link"
+                          onClick={toggleMenu}
+                        >
+                          All {collection.title}
+                        </Link>
+                        {fabricValues.length > 0 ? (
+                          fabricValues.map((value) => (
+                            <Link
+                              key={value.id}
+                              to={`/products?collection=${collection.handle}&fabric=${encodeURIComponent(value.label)}`}
+                              className="mobile-dropdown-link"
+                              onClick={toggleMenu}
+                            >
+                              {value.label}
+                            </Link>
+                          ))
+                        ) : (
+                          <span className="mobile-dropdown-link">
+                            No fabrics yet
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+                {visibleCollections.length === 0 && (
+                  <span className="mobile-dropdown-link">
+                    No collections yet
+                  </span>
+                )}
               </div>
             </div>
-            
-            {/* New Arrivals Link */}
-            <Link
-              to="/products?sort=new"
-              className="mobile-nav-link"
-              onClick={toggleMenu}
-            >
-              New Arrivals
-            </Link>
-            
+
             {/* Shop All Link */}
             <Link
               to="/products"
@@ -236,15 +360,17 @@ export default function Header() {
             >
               Shop All
             </Link>
-            
+
             {/* Sale Link */}
-            <Link
-              to="/products?sale=true"
-              className="mobile-nav-link sale"
-              onClick={toggleMenu}
-            >
-              Sale
-            </Link>
+            {saleCollection && (
+              <Link
+                to={`/products?collection=${saleCollection.handle}`}
+                className="mobile-nav-link sale"
+                onClick={toggleMenu}
+              >
+                {saleCollection.title}
+              </Link>
+            )}
             <Link
               to={isAuthenticated ? "/account" : "/login"}
               className="mobile-profile-btn"
@@ -266,7 +392,7 @@ export default function Header() {
 
       {/* Overlay */}
       {menuOpen && <div className="menu-overlay" onClick={toggleMenu}></div>}
-      
+
       {/* Cart Drawer */}
       <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} />
     </header>
