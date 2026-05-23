@@ -109,6 +109,12 @@
   z-index: 100;
 }
 
+.sort-menu {
+  right: 0;
+  left: auto;
+  max-width: calc(100vw - 24px);
+}
+
 .dropdown-item {
   display: block;
   width: 100%;

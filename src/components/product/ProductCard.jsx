@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useWishlist } from "../../context/WishlistContext";
 import { useCart } from "../../hooks/useCart";
 import { useState } from "react";
@@ -8,7 +8,11 @@ import heartIcon from "../../assets/heart.png";
 import heartEnabledIcon from "../../assets/heartEnabled.png";
 
 export default function ProductCard({ product }) {
+  const location = useLocation();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const productLink = location.search
+    ? `/product/${product.handle}${location.search}`
+    : `/product/${product.handle}`;
   const { addItem } = useCart();
   const inWishlist = isInWishlist(product.id);
   const [isHovered, setIsHovered] = useState(false);
@@ -45,7 +49,7 @@ export default function ProductCard({ product }) {
 
   return (
     <Link
-      to={`/product/${product.handle}`}
+      to={productLink}
       className="productCard"
       key={product.id}
       onMouseEnter={() => setIsHovered(true)}
@@ -77,7 +81,9 @@ export default function ProductCard({ product }) {
       <div className="productDetail">
         <div className="productInfo">
           <div className="productTitle">{product.title}</div>
-          <div className="productPrice">{formatPrice(product.variants.edges[0]?.node.price)}</div>
+          <div className="productPrice">
+            {formatPrice(product.variants.edges[0]?.node.price)}
+          </div>
         </div>
         {/* Wishlist Button */}
         <button

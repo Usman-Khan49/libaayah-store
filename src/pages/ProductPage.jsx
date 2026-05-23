@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { getProduct, getAllProducts } from "../lib/shopify";
+import { Link, useLocation, useParams } from "react-router-dom";
+import {
+  getProduct,
+  getAllProducts,
+  getCollectionByHandle,
+  getCollections,
+} from "../lib/shopify";
 import { useCart } from "../hooks/useCart";
 import { useWishlist } from "../context/WishlistContext";
 import { formatPrice } from "../utils";
@@ -13,8 +18,79 @@ import instagramIcon from "../assets/instagram.png";
 import heartIcon from "../assets/heart.png";
 import heartEnabledIcon from "../assets/heartEnabled.png";
 
+const toTitleCase = (value) =>
+  value
+    ?.toString()
+    .replace(/[-_]+/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+
+const normalizeValue = (value) =>
+  value
+    ?.toString()
+    .toLowerCase()
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const formatCollectionLabel = (value) => {
+  const formatted = toTitleCase(value);
+  if (!formatted) return "";
+  const match = formatted.match(/^(.*?)(\s+Collection\b.*)?$/i);
+  return match?.[1]?.trim() || formatted;
+};
+
+const getMetafieldValue = (value) => {
+  const trimmed = value?.toString().trim();
+  return trimmed ? trimmed : null;
+};
+
+const getTagValue = (tags, key) => {
+  if (!Array.isArray(tags)) return null;
+  const normalizedKey = normalizeValue(key);
+  const match = tags.find((tag) => {
+    const [prefix, rest] = tag.split(":");
+    return normalizeValue(prefix) === normalizedKey && rest;
+  });
+  return match ? match.split(":").slice(1).join(":").trim() : null;
+};
+
+const findCollectionMatch = (label, collections) => {
+  const normalizedLabel = normalizeValue(label);
+  return (
+    collections.find(
+      (collection) => normalizeValue(collection.title) === normalizedLabel,
+    ) ||
+    collections.find(
+      (collection) => normalizeValue(collection.handle) === normalizedLabel,
+    ) ||
+    collections.find((collection) =>
+      normalizeValue(collection.title).includes(normalizedLabel),
+    ) ||
+    collections.find((collection) =>
+      normalizeValue(collection.handle).includes(normalizedLabel),
+    ) ||
+    null
+  );
+};
+
+const getOptionValue = (variant, label) => {
+  if (!variant?.selectedOptions) return null;
+  const match = variant.selectedOptions.find(
+    (option) => option.name?.toLowerCase() === label.toLowerCase(),
+  );
+  return match?.value || null;
+};
+
 export default function ProductPage() {
   const { handle } = useParams();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const collectionParam =
+    searchParams.get("collection") || searchParams.get("category");
+  const fabricParam = searchParams.get("fabric");
   const { addItem } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const [product, setProduct] = useState(null);
@@ -26,6 +102,8 @@ export default function ProductPage() {
   const [addingToCart, setAddingToCart] = useState(false);
   const [buyingNow, setBuyingNow] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [limitHit, setLimitHit] = useState(false);
+  const [resolvedCollection, setResolvedCollection] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,7 +115,7 @@ export default function ProductPage() {
         if (productData) {
           setProduct(productData);
           setRelatedProducts(
-            allProducts.filter((p) => p.id !== productData.id).slice(0, 4)
+            allProducts.filter((p) => p.id !== productData.id).slice(0, 4),
           );
         }
       } catch (err) {
@@ -50,14 +128,62 @@ export default function ProductPage() {
     fetchData();
   }, [handle]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const resolveCollection = async () => {
+      if (!collectionParam) {
+        setResolvedCollection(null);
+        return;
+      }
+
+      try {
+        const byHandle = await getCollectionByHandle(collectionParam);
+        if (cancelled) return;
+
+        if (byHandle) {
+          setResolvedCollection(byHandle);
+          return;
+        }
+
+        const collections = await getCollections(30);
+        if (cancelled) return;
+
+        const match = findCollectionMatch(collectionParam, collections);
+        setResolvedCollection(match);
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Error resolving collection:", error);
+          setResolvedCollection(null);
+        }
+      }
+    };
+
+    resolveCollection();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [collectionParam]);
+
   const handleAddToCart = async () => {
     if (!product) return;
 
     const variant = product.variants.edges[0]?.node;
+    const maxQuantity = Number.isFinite(variant?.quantityAvailable)
+      ? variant.quantityAvailable
+      : null;
+    const safeQuantity =
+      maxQuantity !== null ? Math.min(quantity, maxQuantity) : quantity;
+
     if (variant) {
       try {
         setAddingToCart(true);
-        await addItem(variant.id, quantity);
+        if (safeQuantity < 1) return;
+        if (safeQuantity !== quantity) {
+          setQuantity(safeQuantity);
+        }
+        await addItem(variant.id, safeQuantity);
         setAddedToCart(true);
         setTimeout(() => setAddedToCart(false), 2000);
       } catch (error) {
@@ -73,10 +199,20 @@ export default function ProductPage() {
 
     const variant = product.variants.edges[0]?.node;
     if (!variant) return;
+    const maxQuantity = Number.isFinite(variant?.quantityAvailable)
+      ? variant.quantityAvailable
+      : null;
+    const safeQuantity =
+      maxQuantity !== null ? Math.min(quantity, maxQuantity) : quantity;
+
+    if (safeQuantity < 1) return;
+    if (safeQuantity !== quantity) {
+      setQuantity(safeQuantity);
+    }
 
     try {
       setBuyingNow(true);
-      const cartData = await addItem(variant.id, quantity);
+      const cartData = await addItem(variant.id, safeQuantity);
       if (cartData?.checkoutUrl) {
         window.location.href = cartData.checkoutUrl;
         return;
@@ -97,9 +233,38 @@ export default function ProductPage() {
     }
   };
 
-  const incrementQuantity = () => setQuantity((prev) => prev + 1);
+  const variant = product?.variants?.edges?.[0]?.node;
+  const maxQuantity = Number.isFinite(variant?.quantityAvailable)
+    ? variant.quantityAvailable
+    : null;
+  const minQuantity = maxQuantity === 0 ? 0 : 1;
+
+  const triggerLimitHit = () => {
+    setLimitHit(true);
+    setTimeout(() => setLimitHit(false), 200);
+  };
+
+  const incrementQuantity = () => {
+    if (maxQuantity !== null && quantity >= maxQuantity) {
+      triggerLimitHit();
+      return;
+    }
+    setQuantity((prev) => prev + 1);
+  };
+
   const decrementQuantity = () =>
-    setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+    setQuantity((prev) => (prev > minQuantity ? prev - 1 : minQuantity));
+
+  useEffect(() => {
+    if (maxQuantity === null) return;
+
+    setQuantity((prev) => {
+      if (maxQuantity === 0) return 0;
+      if (prev < minQuantity) return minQuantity;
+      if (prev > maxQuantity) return maxQuantity;
+      return prev;
+    });
+  }, [maxQuantity, minQuantity]);
 
   if (loading) {
     return (
@@ -136,16 +301,64 @@ export default function ProductPage() {
   }
 
   const images = product.images?.edges || [];
-  const price = product.variants.edges[0]?.node.price;
+  const price = variant?.price;
+  const colorValue =
+    getMetafieldValue(product.colorPattern?.value) ||
+    getMetafieldValue(product.colorMetafield?.value) ||
+    getMetafieldValue(product.colorMetafieldAlt?.value) ||
+    getMetafieldValue(product.colorMetafieldGlobal?.value) ||
+    getMetafieldValue(getOptionValue(variant, "color")) ||
+    getMetafieldValue(getOptionValue(variant, "colour")) ||
+    getTagValue(product.tags, "color") ||
+    getTagValue(product.tags, "colour");
+  const fabricValue =
+    product.fabricMetafield?.value || getOptionValue(variant, "fabric");
+  const collectionLabel = collectionParam
+    ? formatCollectionLabel(
+        resolvedCollection?.title ||
+          resolvedCollection?.handle ||
+          collectionParam,
+      )
+    : "All Products";
+  const collectionHandle = resolvedCollection?.handle || collectionParam;
+  const fabricLabel = fabricParam ? toTitleCase(fabricParam) : null;
+  const canAddToCart = maxQuantity === null ? true : maxQuantity > 0;
+  const addDisabled = addingToCart || !canAddToCart;
+  const buyDisabled = buyingNow || addingToCart || !canAddToCart;
   const inWishlist = isInWishlist(product.id);
+  const descriptionHtml = product.descriptionHtml || "";
 
   return (
     <div className="product-page-container">
       {/* Breadcrumb */}
       <nav className="breadcrumbs">
-        <span className="breadcrumb-link">Home</span> &gt;{" "}
-        <span className="breadcrumb-link">Trend Setters</span> &gt;{" "}
-        <span className="breadcrumb-current">{product.handle}</span>
+        <Link to="/" className="breadcrumb-link">
+          Home
+        </Link>
+        <span className="breadcrumb-separator">&gt;</span>
+        <Link
+          to={
+            collectionHandle
+              ? `/products?collection=${encodeURIComponent(collectionHandle)}`
+              : "/products"
+          }
+          className="breadcrumb-link"
+        >
+          {collectionLabel}
+        </Link>
+        {fabricLabel && (
+          <>
+            <span className="breadcrumb-separator">&gt;</span>
+            <Link
+              to={`/products?collection=${encodeURIComponent(collectionHandle || "")}&fabric=${encodeURIComponent(fabricParam)}`}
+              className="breadcrumb-link"
+            >
+              {fabricLabel}
+            </Link>
+          </>
+        )}
+        <span className="breadcrumb-separator">&gt;</span>
+        <span className="breadcrumb-current">{product.title}</span>
       </nav>
 
       {/* Main Product Section */}
@@ -198,15 +411,15 @@ export default function ProductPage() {
           <div className="specs-list">
             <div className="spec-item">
               <span className="spec-label">Color:</span>
-              <span className="spec-value">Beige</span>
+              <span className="spec-value">
+                {colorValue || "Not specified"}
+              </span>
             </div>
             <div className="spec-item">
-              <span className="spec-label">Fabric of Saree:</span>
-              <span className="spec-value">Maysuri</span>
-            </div>
-            <div className="spec-item">
-              <span className="spec-label">Fabric of Blouse:</span>
-              <span className="spec-value">Raw Silk</span>
+              <span className="spec-label">Fabric type:</span>
+              <span className="spec-value">
+                {fabricValue || "Not specified"}
+              </span>
             </div>
           </div>
 
@@ -214,8 +427,12 @@ export default function ProductPage() {
 
           {/* Actions Row */}
           <div className="actions-row">
-            <div className="quantity-selector">
-              <button className="qty-btn" onClick={decrementQuantity}>
+            <div className={`quantity-selector ${limitHit ? "limit-hit" : ""}`}>
+              <button
+                className="qty-btn"
+                onClick={decrementQuantity}
+                disabled={quantity <= minQuantity}
+              >
                 −
               </button>
               <span className="qty-value">{quantity}</span>
@@ -227,13 +444,13 @@ export default function ProductPage() {
             <button
               className="add-to-cart-button"
               onClick={handleAddToCart}
-              disabled={addingToCart}
+              disabled={addDisabled}
             >
               {addingToCart
                 ? "Adding..."
                 : addedToCart
-                ? "Added to Cart ✓"
-                : "Add to Cart"}
+                  ? "Added to Cart ✓"
+                  : "Add to Cart"}
             </button>
             <button
               className={`wishlist-button ${inWishlist ? "active" : ""}`}
@@ -248,16 +465,14 @@ export default function ProductPage() {
           <button
             className="Buy-Now-Btn"
             onClick={handleBuyNow}
-            disabled={buyingNow || addingToCart}
+            disabled={buyDisabled}
           >
             {buyingNow ? "Redirecting to Checkout..." : "Buy Now"}
           </button>
           {/* Shipping Info Box */}
           <div className="shipping-info-box">
             <span className="truck-icon">🚚</span>
-            <span>
-              Get it between Saturday January 3rd - Monday January 5th
-            </span>
+            <span>Delivery in 3-4 business days.</span>
           </div>
 
           {/* Accordion */}
@@ -273,7 +488,14 @@ export default function ProductPage() {
             </button>
             {descriptionOpen && (
               <div className="accordion-content">
-                <p>{product.description || "No description available."}</p>
+                {descriptionHtml ? (
+                  <div
+                    className="product-description"
+                    dangerouslySetInnerHTML={{ __html: descriptionHtml }}
+                  />
+                ) : (
+                  <p>{product.description || "No description available."}</p>
+                )}
               </div>
             )}
           </div>

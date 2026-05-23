@@ -1,6 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { getAllProducts } from "../lib/shopify";
+import {
+  getCollectionProductsWithFilters,
+  getCollections,
+} from "../lib/shopify";
 import { Footer } from "../components/layout";
 import ReelsSection from "../components/layout/ReelsSection";
 import ProductCard from "../components/product/ProductCard";
@@ -12,29 +15,170 @@ import winterImg from "../assets/img88.jpg";
 import summerImg from "../assets/img109.jpg";
 import "../styles/pages/HomePage.css";
 
-const categories = [
-  { key: "unstitched", label: "Unstitched", link: "/products" },
-  { key: "winter", label: "Winter", link: "/products?collection=winter" },
-  { key: "summer", label: "Summer", link: "/products?collection=summer" },
+const popularCollections = [
+  {
+    key: "winter",
+    label: "Winter",
+  },
+  {
+    key: "summer",
+    label: "Summer",
+  },
 ];
 
+const shopCategories = [
+  {
+    key: "unstitched",
+    label: "Unstitched",
+    image: unstitchedImg,
+    alt: "Unstitched Collection",
+  },
+  {
+    key: "winter",
+    label: "Winter",
+    image: winterImg,
+    alt: "Winter Collection",
+  },
+  {
+    key: "summer",
+    label: "Summer",
+    image: summerImg,
+    alt: "Summer Collection",
+  },
+];
+
+const normalizeValue = (value) =>
+  value
+    ?.toString()
+    .toLowerCase()
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const findCollectionMatch = (label, collections) => {
+  const normalizedLabel = normalizeValue(label);
+  return (
+    collections.find(
+      (collection) => normalizeValue(collection.title) === normalizedLabel,
+    ) ||
+    collections.find(
+      (collection) => normalizeValue(collection.handle) === normalizedLabel,
+    ) ||
+    collections.find((collection) =>
+      normalizeValue(collection.title).includes(normalizedLabel),
+    ) ||
+    collections.find((collection) =>
+      normalizeValue(collection.handle).includes(normalizedLabel),
+    ) ||
+    null
+  );
+};
+
 export default function HomePage() {
-  const [products, setProducts] = useState([]);
-  const [activeCategory, setActiveCategory] = useState("unstitched");
+  const [collectionProducts, setCollectionProducts] = useState({});
+  const [collectionMap, setCollectionMap] = useState({});
+  const [activeCategory, setActiveCategory] = useState(
+    popularCollections[0]?.key || "winter",
+  );
   const [animKey, setAnimKey] = useState(0);
 
+  const resolvedPopularCollections = useMemo(
+    () =>
+      popularCollections.map((collection) => {
+        const match = collectionMap[collection.key];
+        return {
+          ...collection,
+          handle: match?.handle || null,
+          link: match?.handle
+            ? `/products?collection=${match.handle}`
+            : "/products",
+        };
+      }),
+    [collectionMap],
+  );
+
+  const resolvedShopCategories = useMemo(
+    () =>
+      shopCategories.map((category) => {
+        if (category.key === "unstitched") {
+          return { ...category, link: "/products" };
+        }
+
+        const match = collectionMap[category.key];
+        return {
+          ...category,
+          link: match?.handle
+            ? `/products?collection=${match.handle}`
+            : "/products",
+        };
+      }),
+    [collectionMap],
+  );
+
   useEffect(() => {
-    const fetchProducts = async () => {
+    let cancelled = false;
+
+    const fetchCollections = async () => {
       try {
-        const fetchedProducts = await getAllProducts(16);
-        setProducts(fetchedProducts);
+        const data = await getCollections(20);
+        const nextMap = popularCollections.reduce((acc, collection) => {
+          const match = findCollectionMatch(collection.label, data);
+          if (match) acc[collection.key] = match;
+          return acc;
+        }, {});
+
+        if (!cancelled) {
+          setCollectionMap(nextMap);
+        }
       } catch (error) {
-        console.error("Error fetching products:", error);
+        if (!cancelled) {
+          console.error("Error fetching collections:", error);
+        }
       }
     };
 
-    fetchProducts();
+    fetchCollections();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchCollections = async () => {
+      try {
+        const entries = await Promise.all(
+          resolvedPopularCollections.map(async (collection) => {
+            if (!collection.handle) {
+              return [collection.key, []];
+            }
+
+            const result = await getCollectionProductsWithFilters(
+              collection.handle,
+              16,
+            );
+            return [collection.key, result.products || []];
+          }),
+        );
+
+        if (!cancelled) {
+          setCollectionProducts(Object.fromEntries(entries));
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Error fetching collection products:", error);
+        }
+      }
+    };
+
+    fetchCollections();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [resolvedPopularCollections]);
 
   const handleCategoryChange = (key) => {
     if (key !== activeCategory) {
@@ -43,9 +187,13 @@ export default function HomePage() {
     }
   };
 
-  // For now all products are shown (filtering will be implemented later with Shopify tags)
-  const filteredProducts = products.slice(0, 8);
-  const activeCategoryData = categories.find((c) => c.key === activeCategory);
+  const filteredProducts = (collectionProducts[activeCategory] || []).slice(
+    0,
+    8,
+  );
+  const activeCategoryData = resolvedPopularCollections.find(
+    (c) => c.key === activeCategory,
+  );
 
   return (
     <div className="homepage-container">
@@ -62,7 +210,7 @@ export default function HomePage() {
 
         {/* Category Tabs */}
         <div className="collection-tabs">
-          {categories.map((cat) => (
+          {resolvedPopularCollections.map((cat) => (
             <button
               key={cat.key}
               className={`collection-tab ${activeCategory === cat.key ? "active" : ""}`}
@@ -77,7 +225,7 @@ export default function HomePage() {
         </div>
 
         {/* Products Carousel */}
-        <ProductsCarousel products={filteredProducts} />
+        <ProductsCarousel key={activeCategory} products={filteredProducts} />
 
         {/* View All Button */}
         <div className="collection-view-all">
@@ -95,54 +243,31 @@ export default function HomePage() {
         <h2 className="home-section-heading">Shop by Category</h2>
         <p className="home-section-subheading">Find your perfect piece</p>
         <div className="hero-categories">
-          <Link to="/products" className="category-box">
-            <img
-              src={unstitchedImg}
-              alt="Unstitched Collection"
-              className="category-image"
-              loading="lazy"
-              decoding="async"
-            />
-            <div className="category-overlay">
-              <h2 className="category-title">Unstitched</h2>
-              <p className="category-shop-now">Shop Now</p>
-            </div>
-          </Link>
-          <Link to="/products?collection=winter" className="category-box">
-            <img
-              src={winterImg}
-              alt="Winter Collection"
-              className="category-image"
-              loading="lazy"
-              decoding="async"
-            />
-            <div className="category-overlay">
-              <h2 className="category-title">Winter</h2>
-              <p className="category-shop-now">Shop Now</p>
-            </div>
-          </Link>
-          <Link to="/products?collection=summer" className="category-box">
-            <img
-              src={summerImg}
-              alt="Summer Collection"
-              className="category-image"
-              loading="lazy"
-              decoding="async"
-            />
-            <div className="category-overlay">
-              <h2 className="category-title">Summer</h2>
-              <p className="category-shop-now">Shop Now</p>
-            </div>
-          </Link>
+          {resolvedShopCategories.map((category) => (
+            <Link
+              key={category.key}
+              to={category.link}
+              className="category-box"
+            >
+              <img
+                src={category.image}
+                alt={category.alt}
+                className="category-image"
+                loading="lazy"
+                decoding="async"
+              />
+              <div className="category-overlay">
+                <h2 className="category-title">{category.label}</h2>
+                <p className="category-shop-now">Shop Now</p>
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
 
       {/* Showcase Video + CTA Section */}
       <section className="showcase-section">
         <div className="showcase-video-wrapper">
-<<<<<<< HEAD
-          <video className="showcase-video" muted loop playsInline autoPlay>
-=======
           <video
             className="showcase-video"
             muted
@@ -151,7 +276,6 @@ export default function HomePage() {
             autoPlay
             preload="metadata"
           >
->>>>>>> a7526da90352c75c88684e785e2b5140438cff58
             <source src={showcaseVideo} type="video/mp4" />
           </video>
         </div>

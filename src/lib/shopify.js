@@ -412,8 +412,24 @@ export async function getProduct(handle) {
         handle 
         title
         description
+        descriptionHtml
         tags 
         availableForSale
+        fabricMetafield: metafield(namespace: "custom", key: "fabric") {
+          value
+        }
+        colorPattern: metafield(namespace: "custom", key: "color-pattern") {
+          value
+        }
+        colorMetafield: metafield(namespace: "custom", key: "color") {
+          value
+        }
+        colorMetafieldAlt: metafield(namespace: "custom", key: "colour") {
+          value
+        }
+        colorMetafieldGlobal: metafield(namespace: "global", key: "color") {
+          value
+        }
         images(first: 10) {
           edges {
             node {
@@ -429,6 +445,7 @@ export async function getProduct(handle) {
               title 
               sku
               availableForSale
+              quantityAvailable
               price {
                 amount 
                 currencyCode

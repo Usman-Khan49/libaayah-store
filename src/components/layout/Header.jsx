@@ -66,6 +66,16 @@ export default function Header() {
   const visibleCollections = collections.filter(
     (collection) => collection.handle !== "sale",
   );
+  const pinnedHandles = ["summer", "winter"];
+  const pinnedCollections = pinnedHandles
+    .map((handle) => visibleCollections.find((item) => item.handle === handle))
+    .filter(Boolean);
+  const otherCollections = visibleCollections.filter(
+    (collection) => !pinnedHandles.includes(collection.handle),
+  );
+  const menuCollections = pinnedCollections.length
+    ? [...pinnedCollections, ...otherCollections]
+    : visibleCollections;
 
   useEffect(() => {
     const fetchCollections = async () => {
@@ -170,10 +180,15 @@ export default function Header() {
               <div className="mega-menu-content">
                 {/* Column 1: Featured Image */}
                 <div className="mega-menu-image">
-                  <img src={collectionImg} alt="Collection" loading="lazy" decoding="async" />
+                  <img
+                    src={collectionImg}
+                    alt="Collection"
+                    loading="lazy"
+                    decoding="async"
+                  />
                 </div>
 
-                {visibleCollections.map((collection) => {
+                {menuCollections.map((collection) => {
                   const fabricValues =
                     collectionFacets[collection.handle] || [];
 
@@ -241,7 +256,12 @@ export default function Header() {
             <img src={userIcon} alt="User" loading="lazy" decoding="async" />
           </Link>
           <Link to="/wishlist" className="icon-btn" aria-label="Wishlist">
-            <img src={heartIcon} alt="Wishlist" loading="lazy" decoding="async" />
+            <img
+              src={heartIcon}
+              alt="Wishlist"
+              loading="lazy"
+              decoding="async"
+            />
             {wishlistCount > 0 && (
               <span className="icon-badge">{wishlistCount}</span>
             )}
@@ -291,7 +311,7 @@ export default function Header() {
               <div
                 className={`mobile-dropdown ${mobileCollectionOpen ? "open" : ""}`}
               >
-                {visibleCollections.map((collection) => {
+                {menuCollections.map((collection) => {
                   const fabricValues =
                     collectionFacets[collection.handle] || [];
                   const sectionOpen = mobileSectionOpen[collection.handle];
