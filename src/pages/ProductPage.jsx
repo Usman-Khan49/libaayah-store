@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import {
   getProduct,
   getAllProducts,
   getCollectionByHandle,
   getCollections,
+  getProductReels,
+  getShoppableReels,
 } from "../lib/shopify";
 import { useCart } from "../hooks/useCart";
 import { useWishlist } from "../context/WishlistContext";
@@ -106,6 +108,14 @@ export default function ProductPage() {
   const [resolvedCollection, setResolvedCollection] = useState(null);
   const [error, setError] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
+  const [productReels, setProductReels] = useState([]);
+  const [reelsLoading, setReelsLoading] = useState(false);
+  const [reelsError, setReelsError] = useState(false);
+  const [selectedReelIndex, setSelectedReelIndex] = useState(null);
+  const [reelMuted, setReelMuted] = useState(true);
+  const [reelProgress, setReelProgress] = useState(0);
+  const previewVideoRef = useRef(null);
+  const modalVideoRef = useRef(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -133,6 +143,45 @@ export default function ProductPage() {
 
     fetchData();
   }, [handle, retryKey]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchReels = async () => {
+      try {
+        setReelsError(false);
+        setReelsLoading(true);
+        const reels = await getProductReels(handle, 10);
+        let nextReels = reels || [];
+
+        if (nextReels.length === 0) {
+          const allReels = await getShoppableReels(20);
+          nextReels = (allReels || []).filter(
+            (reel) => reel?.product?.handle === handle,
+          );
+        }
+
+        if (!cancelled) {
+          setProductReels(nextReels);
+        }
+      } catch (err) {
+        console.error("Error fetching product reels:", err);
+        if (!cancelled) {
+          setReelsError(true);
+        }
+      } finally {
+        if (!cancelled) {
+          setReelsLoading(false);
+        }
+      }
+    };
+
+    fetchReels();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [handle]);
 
   useEffect(() => {
     let cancelled = false;
@@ -171,6 +220,12 @@ export default function ProductPage() {
       cancelled = true;
     };
   }, [collectionParam]);
+
+  useEffect(() => {
+    if (selectedReelIndex !== null && selectedReelIndex >= productReels.length) {
+      setSelectedReelIndex(null);
+    }
+  }, [productReels, selectedReelIndex]);
 
   const handleAddToCart = async () => {
     if (!product) return;
@@ -276,6 +331,81 @@ export default function ProductPage() {
     setRetryKey((prev) => prev + 1);
   };
 
+  const handleReelRetry = () => {
+    setReelsLoading(true);
+    setReelsError(false);
+    getProductReels(handle, 10)
+      .then((reels) => {
+        setProductReels(reels || []);
+      })
+      .catch((err) => {
+        console.error("Error fetching product reels:", err);
+        setReelsError(true);
+      })
+      .finally(() => setReelsLoading(false));
+  };
+
+  const getReelVideoSource = (reel) => {
+    const sources = reel?.video?.sources || [];
+    const mp4 = sources.find((source) =>
+      source?.mimeType?.toLowerCase().includes("mp4"),
+    );
+    return (mp4 || sources[0])?.url || null;
+  };
+
+  const getReelPoster = (reel) => {
+    return (
+      reel?.thumbnail?.image?.url ||
+      reel?.video?.previewImage?.url ||
+      reel?.product?.featuredImage?.url ||
+      ""
+    );
+  };
+
+  const openReelModal = (index) => {
+    setSelectedReelIndex(index);
+    setReelProgress(0);
+  };
+
+  const closeReelModal = () => {
+    setSelectedReelIndex(null);
+    setReelProgress(0);
+  };
+
+  const navigateReel = (direction) => {
+    if (selectedReelIndex === null) return;
+
+    if (direction === "prev") {
+      setSelectedReelIndex((prev) =>
+        prev > 0 ? prev - 1 : productReels.length - 1,
+      );
+    } else {
+      setSelectedReelIndex((prev) =>
+        prev < productReels.length - 1 ? prev + 1 : 0,
+      );
+    }
+  };
+
+  useEffect(() => {
+    if (!previewVideoRef.current) return;
+    previewVideoRef.current.play().catch((err) => {
+      console.log("Preview autoplay blocked:", err);
+    });
+  }, [productReels]);
+
+  useEffect(() => {
+    const video = modalVideoRef.current;
+    if (!video) return;
+
+    const updateProgress = () => {
+      const nextProgress = (video.currentTime / video.duration) * 100;
+      setReelProgress(nextProgress);
+    };
+
+    video.addEventListener("timeupdate", updateProgress);
+    return () => video.removeEventListener("timeupdate", updateProgress);
+  }, [selectedReelIndex]);
+
   if (loading) {
     return (
       <div className="product-page-container">
@@ -356,6 +486,14 @@ export default function ProductPage() {
   const buyDisabled = buyingNow || addingToCart || !canAddToCart;
   const inWishlist = isInWishlist(product.id);
   const descriptionHtml = product.descriptionHtml || "";
+  const previewReel = productReels[0] || null;
+  const previewVideo = getReelVideoSource(previewReel);
+  const previewPoster = getReelPoster(previewReel);
+  const activeReel =
+    selectedReelIndex !== null ? productReels[selectedReelIndex] : null;
+  const activeReelProduct = activeReel?.product || product;
+  const reelPrice =
+    activeReel?.product?.priceRange?.minVariantPrice || price;
 
   return (
     <div className="product-page-container">
@@ -566,6 +704,168 @@ export default function ProductPage() {
           ))}
         </div>
       </section>
+
+      {previewReel && !reelsLoading && !reelsError && (
+        <button
+          type="button"
+          className="pdp-reel-preview"
+          onClick={() => openReelModal(0)}
+          aria-label="Watch product reel"
+        >
+          <div className="pdp-reel-video-wrapper">
+            {previewVideo ? (
+              <video
+                ref={previewVideoRef}
+                className="pdp-reel-video"
+                src={previewVideo}
+                poster={previewPoster}
+                muted
+                loop
+                playsInline
+                preload="metadata"
+              />
+            ) : (
+              previewPoster && (
+                <img
+                  src={previewPoster}
+                  alt={previewReel?.title || "Product reel"}
+                  className="pdp-reel-video"
+                  loading="lazy"
+                  decoding="async"
+                />
+              )
+            )}
+            <span className="pdp-reel-play" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                aria-hidden="true"
+              >
+                <path d="M8 5v14l11-7z" fill="currentColor" />
+              </svg>
+            </span>
+          </div>
+        </button>
+      )}
+
+      {reelsError && !reelsLoading && (
+        <button
+          type="button"
+          className="pdp-reel-retry"
+          onClick={handleReelRetry}
+        >
+          Retry Reels
+        </button>
+      )}
+
+      {selectedReelIndex !== null && activeReel && (
+        <div className="reel-modal" onClick={closeReelModal}>
+          <button className="reel-modal-close" onClick={closeReelModal}>
+            ×
+          </button>
+
+          {productReels.length > 1 && (
+            <button
+              className="reel-modal-nav reel-nav-prev"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigateReel("prev");
+              }}
+            >
+              ←
+            </button>
+          )}
+
+          <div
+            className="reel-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="reel-modal-video-wrapper">
+              <div className="reel-progress-bar">
+                <div
+                  className="reel-progress-fill"
+                  style={{ width: `${reelProgress}%` }}
+                />
+              </div>
+
+              <button
+                className="reel-volume-btn"
+                onClick={() => setReelMuted(!reelMuted)}
+              >
+                {reelMuted ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                    <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+                  </svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                  </svg>
+                )}
+              </button>
+
+              <video
+                ref={modalVideoRef}
+                className="reel-modal-video"
+                src={getReelVideoSource(activeReel)}
+                poster={getReelPoster(activeReel)}
+                autoPlay
+                loop
+                playsInline
+                muted={reelMuted}
+                preload="metadata"
+                controlsList="nodownload nofullscreen noremoteplayback"
+                disablePictureInPicture
+                onContextMenu={(e) => e.preventDefault()}
+              />
+
+              <div className="reel-modal-product-card">
+                <div className="prod-detail-container">
+                  {activeReelProduct?.featuredImage?.url && (
+                    <img
+                      src={activeReelProduct.featuredImage.url}
+                      alt={activeReelProduct.title}
+                      className="reel-product-thumb"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  )}
+                  <div className="reel-product-details">
+                    <p className="reel-product-code">
+                      {activeReelProduct?.title || "View Product"}
+                    </p>
+                    {reelPrice && (
+                      <p className="reel-product-price">
+                        {formatPrice(reelPrice)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                {activeReelProduct?.handle && (
+                  <Link
+                    to={`/product/${activeReelProduct.handle}`}
+                    className="reel-add-to-cart"
+                  >
+                    View Product
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {productReels.length > 1 && (
+            <button
+              className="reel-modal-nav reel-nav-next"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigateReel("next");
+              }}
+            >
+              →
+            </button>
+          )}
+        </div>
+      )}
 
       <Footer />
     </div>

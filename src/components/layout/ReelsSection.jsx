@@ -1,4 +1,7 @@
 import { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { getShoppableReels } from "../../lib/shopify";
+import { formatPrice } from "../../utils";
 import "../../styles/components/ReelsSection.css";
 
 export default function ReelsSection() {
@@ -6,11 +9,44 @@ export default function ReelsSection() {
   const [isMuted, setIsMuted] = useState(true);
   const [progress, setProgress] = useState(0);
   const [focusedIndex, setFocusedIndex] = useState(0);
+  const [reels, setReels] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const videoRefs = useRef([]);
   const modalVideoRef = useRef(null);
   const containerRef = useRef(null);
 
-  // Auto-play videos when component mounts
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchReels = async () => {
+      try {
+        setError(false);
+        setLoading(true);
+        const data = await getShoppableReels(20);
+        if (!cancelled) {
+          setReels(data || []);
+        }
+      } catch (err) {
+        console.error("Error fetching reels:", err);
+        if (!cancelled) {
+          setError(true);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchReels();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Auto-play videos when reels load
   useEffect(() => {
     videoRefs.current.forEach((video) => {
       if (video) {
@@ -19,7 +55,7 @@ export default function ReelsSection() {
         });
       }
     });
-  }, []);
+  }, [reels]);
 
   // Handle scroll to update focused card on mobile
   useEffect(() => {
@@ -67,60 +103,46 @@ export default function ReelsSection() {
     video.addEventListener("timeupdate", updateProgress);
     return () => video.removeEventListener("timeupdate", updateProgress);
   }, [selectedReel]);
+  useEffect(() => {
+    if (selectedReel !== null && selectedReel >= reels.length) {
+      setSelectedReel(null);
+    }
+  }, [reels, selectedReel]);
 
-  // Sample reels data - replace with actual product videos
-  const reels = [
-    {
-      id: 1,
-      videoUrl: "/Sample-Reel-Video.mp4",
-      thumbnail: "/fashion-model-in-coral-blazer-and-blue-top.jpg",
-      productCode: "TW-24",
-      productName: "Navy Embroidered Velvet",
-      price: "Rs22,500",
-      likes: 50,
-      comments: 89,
-    },
-    {
-      id: 2,
-      videoUrl: "/Sample-Reel-Video.mp4",
-      thumbnail: "/fashion-model-in-brown-oversized-coat-and-hat.jpg",
-      productCode: "NW-115",
-      productName: "Emerald Silk Collection",
-      price: "Rs18,900",
-      likes: 42,
-      comments: 67,
-    },
-    {
-      id: 3,
-      videoUrl: "/Sample-Reel-Video.mp4",
-      thumbnail: "/fashion-model-in-beige-hat-and-cream-outfit.jpg",
-      productCode: "NW-116",
-      productName: "Blush Pink Chiffon",
-      price: "Rs15,500",
-      likes: 38,
-      comments: 54,
-    },
-    {
-      id: 4,
-      videoUrl: "/Sample-Reel-Video.mp4",
-      thumbnail: "/fashion-model-in-orange-hoodie.jpg",
-      productCode: "NW-117",
-      productName: "Coral Summer Lawn",
-      price: "Rs12,800",
-      likes: 61,
-      comments: 92,
-    },
-    {
-      id: 5,
-      videoUrl: "/Sample-Reel-Video.mp4",
-      thumbnail: "/fashion-model-in-coral-blazer-and-blue-top.jpg",
-      productCode: "SW-205",
-      productName: "Elegant Winter Wear",
-      price: "Rs19,800",
-      likes: 55,
-      comments: 78,
-    },
-  ];
+  const getReelVideoSource = (reel) => {
+    const sources = reel?.video?.sources || [];
+    const mp4 = sources.find((source) =>
+      source?.mimeType?.toLowerCase().includes("mp4"),
+    );
+    return (mp4 || sources[0])?.url || null;
+  };
+
+  const getReelPoster = (reel) => {
+    return (
+      reel?.thumbnail?.image?.url ||
+      reel?.video?.previewImage?.url ||
+      reel?.product?.featuredImage?.url ||
+      ""
+    );
+  };
+
+  const getReelLabel = (reel) => {
+    return reel?.title || reel?.product?.title || "Featured";
+  };
+
+  const getReelColor = (reel) => {
+    const color =
+      reel?.product?.colorPattern?.value ||
+      reel?.product?.colorMetafield?.value ||
+      reel?.product?.colorMetafieldAlt?.value ||
+      reel?.product?.colorMetafieldGlobal?.value;
+    const normalized = color?.toString().trim();
+    return normalized || null;
+  };
+
+  const getReelProductImage = (reel) => {
+    return reel?.product?.featuredImage?.url || getReelPoster(reel);
+  };
 
   const openReelModal = (index) => {
     setSelectedReel(index);
@@ -147,58 +169,89 @@ export default function ReelsSection() {
     openReelModal(index);
   };
 
+  if (!loading && (error || reels.length === 0)) {
+    return null;
+  }
+
   return (
     <section className="reels-section">
       <div className="reels-container" ref={containerRef}>
-        {reels.map((reel, index) => (
+        {reels.map((reel, index) => {
+          const videoUrl = getReelVideoSource(reel);
+          const posterUrl = getReelPoster(reel);
+
+          const colorValue = getReelColor(reel);
+          const productImage = getReelProductImage(reel);
+          const productTitle = reel?.product?.title || getReelLabel(reel);
+
+          return (
           <div
             key={reel.id}
             className={`reel-card ${index === focusedIndex ? "focused" : ""}`}
             onClick={(e) => handleVideoClick(e, index)}
           >
             <div className="reel-video-wrapper">
-              <video
-                ref={(el) => (videoRefs.current[index] = el)}
-                className="reel-video"
-                src={reel.videoUrl}
-                poster={reel.thumbnail}
-                muted
-                loop
-                playsInline
-                preload="none"
-                onLoadedData={(e) => {
-                  e.target.play().catch((err) => {
-                    console.log("Autoplay blocked:", err);
-                  });
-                }}
-                onError={(e) => {
-                  // Fallback to thumbnail if video fails
-                  console.log("Video failed to load:", reel.videoUrl);
-                  e.target.style.display = "none";
-                  e.target.nextSibling.style.display = "block";
-                }}
-              />
-              <img
-                src={reel.thumbnail}
-                alt={reel.productName}
-                className="reel-fallback"
-                loading="lazy"
-                decoding="async"
-              />
+              {videoUrl ? (
+                <video
+                  ref={(el) => (videoRefs.current[index] = el)}
+                  className="reel-video"
+                  src={videoUrl}
+                  poster={posterUrl}
+                  muted
+                  loop
+                  playsInline
+                  preload="none"
+                  onLoadedData={(e) => {
+                    e.target.play().catch((err) => {
+                      console.log("Autoplay blocked:", err);
+                    });
+                  }}
+                  onError={(e) => {
+                    console.log("Video failed to load:", videoUrl);
+                    e.target.style.display = "none";
+                    if (e.target.nextSibling) {
+                      e.target.nextSibling.style.display = "block";
+                    }
+                  }}
+                />
+              ) : null}
+              {posterUrl ? (
+                <img
+                  src={posterUrl}
+                  alt={getReelLabel(reel)}
+                  className="reel-fallback"
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : null}
 
-              {/* Simple overlay with product code */}
               <div className="reel-overlay">
-                <span className="reel-product-code-badge">
-                  {reel.productCode}
-                </span>
+                <div className="reel-mini-card">
+                  {productImage && (
+                    <img
+                      src={productImage}
+                      alt={productTitle}
+                      className="reel-mini-thumb"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  )}
+                  <div className="reel-mini-info">
+                    <p className="reel-mini-title">{productTitle}</p>
+                    {colorValue && (
+                      <p className="reel-mini-color">Color: {colorValue}</p>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        ))}
+        );
+        })}
       </div>
 
       {/* Modal for expanded view */}
-      {selectedReel !== null && (
+      {selectedReel !== null && reels[selectedReel] && (
         <div className="reel-modal" onClick={closeReelModal}>
           <button className="reel-modal-close" onClick={closeReelModal}>
             ×
@@ -246,8 +299,8 @@ export default function ReelsSection() {
               <video
                 ref={modalVideoRef}
                 className="reel-modal-video"
-                src={reels[selectedReel].videoUrl}
-                poster={reels[selectedReel].thumbnail}
+                src={getReelVideoSource(reels[selectedReel])}
+                poster={getReelPoster(reels[selectedReel])}
                 autoPlay
                 loop
                 playsInline
@@ -258,58 +311,44 @@ export default function ReelsSection() {
                 onContextMenu={(e) => e.preventDefault()}
               />
 
-              {/* Right side action buttons in modal */}
-              <div className="reel-modal-actions">
-                <button className="reel-action-btn">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-                      fill="white"
-                    />
-                  </svg>
-                  <span>{reels[selectedReel].likes}</span>
-                </button>
-                <button className="reel-action-btn">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"
-                      fill="white"
-                    />
-                  </svg>
-                  <span>{reels[selectedReel].comments}</span>
-                </button>
-              </div>
-
               {/* Product card in modal */}
               <div className="reel-modal-product-card">
                 <div className="prod-detail-container">
-                  <img
-                    src={reels[selectedReel].thumbnail}
-                    alt={reels[selectedReel].productName}
-                    className="reel-product-thumb"
-                    loading="lazy"
-                    decoding="async"
-                  />
+                  {reels[selectedReel]?.product?.featuredImage?.url && (
+                    <img
+                      src={
+                        reels[selectedReel].product.featuredImage.url
+                      }
+                      alt={reels[selectedReel].product.title}
+                      className="reel-product-thumb"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  )}
                   <div className="reel-product-details">
                     <p className="reel-product-code">
-                      {reels[selectedReel].productCode}
+                      {reels[selectedReel]?.product?.title ||
+                        getReelLabel(reels[selectedReel])}
                     </p>
-                    <p className="reel-product-price">
-                      {reels[selectedReel].price}
-                    </p>
+                    {reels[selectedReel]?.product?.priceRange
+                      ?.minVariantPrice && (
+                      <p className="reel-product-price">
+                        {formatPrice(
+                          reels[selectedReel].product.priceRange
+                            .minVariantPrice,
+                        )}
+                      </p>
+                    )}
                   </div>
                 </div>
-                <button
-                  className="reel-add-to-cart"
-                  onClick={() => {
-                    console.log(
-                      "Add to cart:",
-                      reels[selectedReel].productCode
-                    );
-                  }}
-                >
-                  ADD TO CART
-                </button>
+                {reels[selectedReel]?.product?.handle && (
+                  <Link
+                    to={`/product/${reels[selectedReel].product.handle}`}
+                    className="reel-add-to-cart"
+                  >
+                    View Product
+                  </Link>
+                )}
               </div>
             </div>
           </div>

@@ -67,6 +67,80 @@
   font-size: 0.85rem;
 }
 
+.pdp-reel-preview {
+  position: fixed;
+  left: 24px;
+  bottom: 120px;
+  width: 130px;
+  height: 220px;
+  border: none;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  z-index: 1200;
+}
+
+.pdp-reel-video-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+}
+
+.pdp-reel-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.pdp-reel-play {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pdp-reel-retry {
+  position: fixed;
+  left: 24px;
+  bottom: 120px;
+  padding: 10px 14px;
+  border: none;
+  background-color: #8B2E3F;
+  color: #FFFFFF;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.65rem;
+  cursor: pointer;
+  border-radius: 999px;
+  z-index: 1200;
+}
+
+@media (max-width: 768px) {
+  .pdp-reel-preview {
+    width: 110px;
+    height: 190px;
+    left: 16px;
+    bottom: 90px;
+  }
+
+  .pdp-reel-retry {
+    left: 16px;
+    bottom: 90px;
+  }
+}
+
 /* ========================================
    Breadcrumbs Module
    ======================================== */

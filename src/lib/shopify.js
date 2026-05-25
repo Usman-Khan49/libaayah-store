@@ -467,3 +467,175 @@ export async function getProduct(handle) {
   const data = await shopifyFetch(query, { handle });
   return data?.product || null;
 }
+
+const parseMetaobjectFields = (fields = []) => {
+  return fields.reduce((acc, field) => {
+    if (!field?.key) return acc;
+    acc[field.key] = field.reference || field.value || null;
+    return acc;
+  }, {});
+};
+
+const normalizeReelNode = (node) => {
+  if (!node) return null;
+  return {
+    id: node.id,
+    handle: node.handle,
+    ...parseMetaobjectFields(node.fields || []),
+  };
+};
+
+export async function getShoppableReels(limit = 20) {
+  const query = `
+    query getShoppableReels($first: Int!) {
+      metaobjects(type: "shoppable_reel", first: $first) {
+        edges {
+          node {
+            id
+            handle
+            fields {
+              key
+              value
+              reference {
+                ... on MediaImage {
+                  image {
+                    url
+                    altText
+                  }
+                }
+                ... on Video {
+                  sources {
+                    url
+                    mimeType
+                  }
+                  previewImage {
+                    url
+                    altText
+                  }
+                }
+                ... on Product {
+                  id
+                  title
+                  handle
+                  colorPattern: metafield(namespace: "custom", key: "color-pattern") {
+                    value
+                  }
+                  colorMetafield: metafield(namespace: "custom", key: "color") {
+                    value
+                  }
+                  colorMetafieldAlt: metafield(namespace: "custom", key: "colour") {
+                    value
+                  }
+                  colorMetafieldGlobal: metafield(namespace: "global", key: "color") {
+                    value
+                  }
+                  priceRange {
+                    minVariantPrice {
+                      amount
+                      currencyCode
+                    }
+                  }
+                  featuredImage {
+                    url
+                    altText
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const data = await shopifyFetch(query, { first: limit });
+  const reels = (data?.metaobjects?.edges || [])
+    .map((edge) => normalizeReelNode(edge.node))
+    .filter(Boolean);
+
+  return reels.sort((a, b) => {
+    const aOrder = Number.parseInt(a.display_order, 10);
+    const bOrder = Number.parseInt(b.display_order, 10);
+
+    if (Number.isNaN(aOrder) && Number.isNaN(bOrder)) return 0;
+    if (Number.isNaN(aOrder)) return 1;
+    if (Number.isNaN(bOrder)) return -1;
+    return aOrder - bOrder;
+  });
+}
+
+export async function getProductReels(handle, limit = 10) {
+  const query = `
+    query getProductReels($handle: String!, $first: Int!) {
+      product(handle: $handle) {
+        metafield(namespace: "custom", key: "reels") {
+          references(first: $first) {
+            edges {
+              node {
+                ... on Metaobject {
+                  id
+                  handle
+                  fields {
+                    key
+                    value
+                    reference {
+                      ... on MediaImage {
+                        image {
+                          url
+                          altText
+                        }
+                      }
+                      ... on Video {
+                        sources {
+                          url
+                          mimeType
+                        }
+                        previewImage {
+                          url
+                          altText
+                        }
+                      }
+                      ... on Product {
+                        id
+                        title
+                        handle
+                        colorPattern: metafield(namespace: "custom", key: "color-pattern") {
+                          value
+                        }
+                        colorMetafield: metafield(namespace: "custom", key: "color") {
+                          value
+                        }
+                        colorMetafieldAlt: metafield(namespace: "custom", key: "colour") {
+                          value
+                        }
+                        colorMetafieldGlobal: metafield(namespace: "global", key: "color") {
+                          value
+                        }
+                        priceRange {
+                          minVariantPrice {
+                            amount
+                            currencyCode
+                          }
+                        }
+                        featuredImage {
+                          url
+                          altText
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const data = await shopifyFetch(query, { handle, first: limit });
+  const edges = data?.product?.metafield?.references?.edges || [];
+  return edges
+    .map((edge) => normalizeReelNode(edge.node))
+    .filter(Boolean);
+}
