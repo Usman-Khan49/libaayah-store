@@ -10,12 +10,89 @@
 }
 
 /* ========================================
-   Hero Placeholder
+   Hero Banner Slider
    ======================================== */
-.hero-placeholder {
+.hero-slider {
+  position: relative;
   width: 100%;
-  height: 100vh;
-  background-color: #FFFFFF;
+  height: min(85vh, 920px);
+  overflow: hidden;
+  background-color: #f3f3f3;
+}
+
+.hero-slider-track {
+  display: flex;
+  height: 100%;
+  transition: transform 0.6s ease;
+}
+
+.hero-slide {
+  flex: 0 0 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+}
+
+.hero-dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 24px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  z-index: 2;
+}
+
+.hero-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  display: inline-block;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.35);
+  line-height: 1;
+  appearance: none;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.hero-dot.active {
+  background: #ffffff;
+  transform: scale(1.05);
+}
+
+.hero-dot:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  .hero-slider {
+    height: auto;
+  }
+
+  .hero-slider-track {
+    height: auto;
+  }
+
+  .hero-slide {
+    height: auto;
+  }
+
+  .hero-slide img {
+    height: auto;
+  }
 }
 
 /* ========================================
@@ -69,6 +146,35 @@
   font-weight: 600;
   color: #000000;
   margin: 0 0 32px 0;
+}
+
+.home-error {
+  max-width: 520px;
+  margin: 0 auto 28px;
+  padding: 16px 20px;
+  border: 1px solid #f0c6c6;
+  background-color: #fff5f5;
+  color: #7a1f1f;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.home-error-btn {
+  margin-top: 12px;
+  padding: 10px 20px;
+  border: none;
+  background-color: #8B2E3F;
+  color: #FFFFFF;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.home-error-btn:hover {
+  background-color: #6B1F2F;
 }
 
 /* Tabs Row */

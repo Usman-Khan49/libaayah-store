@@ -100,6 +100,8 @@ export default function ProductsPage() {
   const [activeFilters, setActiveFilters] = useState([]);
   const [priceBounds, setPriceBounds] = useState({ min: null, max: null });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
   const [sortKey, setSortKey] = useState("RELEVANCE");
   const [reverseSort, setReverseSort] = useState(false);
   const [sortLabel, setSortLabel] = useState("Sort");
@@ -111,6 +113,7 @@ export default function ProductsPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setError(false);
         setLoading(true);
         let productData = [];
         let dynamicFilters = [];
@@ -182,6 +185,7 @@ export default function ProductsPage() {
         }
       } catch (err) {
         console.error("Error fetching products:", err);
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -194,6 +198,7 @@ export default function ProductsPage() {
     reverseSort,
     searchQuery,
     activeCollectionHandle,
+    retryKey,
   ]);
 
   useEffect(() => {
@@ -225,7 +230,7 @@ export default function ProductsPage() {
     return () => {
       cancelled = true;
     };
-  }, [activeCollectionHandle]);
+  }, [activeCollectionHandle, retryKey]);
 
   useEffect(() => {
     if (!sortParam) return;
@@ -385,8 +390,40 @@ export default function ProductsPage() {
     setActiveFilters([]);
   };
 
+  const handleRetry = () => {
+    setRetryKey((prev) => prev + 1);
+  };
+
+  if (error && products.length === 0) {
+    return (
+      <div className="products-page">
+        <div className="products-error">
+          <h2>We are having trouble loading products.</h2>
+          <p>Please try again in a moment.</p>
+          <button className="products-error-btn" onClick={handleRetry}>
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (loading && products.length === 0) {
-    return <div className="loading">Loading...</div>;
+    return (
+      <div className="products-page">
+        <div className="skeleton-page" style={{ marginTop: "120px" }}>
+          <div className="skeleton-header-row">
+            <Skeleton className="skeleton-title" />
+            <Skeleton className="skeleton-chip" />
+          </div>
+          <div className="skeleton-grid">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <Skeleton key={index} className="skeleton-card" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -395,6 +432,15 @@ export default function ProductsPage() {
       <section className="collection-header">
         <h1 className="collection-title">{collectionTitle}</h1>
       </section>
+
+      {error && (
+        <div className="products-error-banner">
+          <span>We are having trouble refreshing products right now.</span>
+          <button className="products-error-btn" onClick={handleRetry}>
+            Try Again
+          </button>
+        </div>
+      )}
 
       {/* Toolbar */}
       <div className="toolbar">

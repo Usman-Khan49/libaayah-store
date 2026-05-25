@@ -10,6 +10,8 @@ import ProductCard from "../components/product/ProductCard";
 import ProductsCarousel from "../components/layout/ProductsCarousel";
 import UtilitiesSection from "../components/layout/UtilitiesSection";
 import showcaseVideo from "../assets/Bottom_Banner.mp4";
+import bannerImageOne from "../assets/Banner_image_1.png";
+import bannerImageTwo from "../assets/Banner_image_2.png";
 import unstitchedImg from "../assets/img36.jpg";
 import winterImg from "../assets/img88.jpg";
 import summerImg from "../assets/img109.jpg";
@@ -47,6 +49,17 @@ const shopCategories = [
   },
 ];
 
+const heroBanners = [
+  {
+    src: bannerImageOne,
+    alt: "Libaayah banner 1",
+  },
+  {
+    src: bannerImageTwo,
+    alt: "Libaayah banner 2",
+  },
+];
+
 const normalizeValue = (value) =>
   value
     ?.toString()
@@ -81,6 +94,10 @@ export default function HomePage() {
     popularCollections[0]?.key || "winter",
   );
   const [animKey, setAnimKey] = useState(0);
+  const [bannerIndex, setBannerIndex] = useState(0);
+  const [collectionsError, setCollectionsError] = useState(false);
+  const [productsError, setProductsError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
 
   const resolvedPopularCollections = useMemo(
     () =>
@@ -120,6 +137,7 @@ export default function HomePage() {
 
     const fetchCollections = async () => {
       try {
+        setCollectionsError(false);
         const data = await getCollections(20);
         const nextMap = popularCollections.reduce((acc, collection) => {
           const match = findCollectionMatch(collection.label, data);
@@ -133,6 +151,7 @@ export default function HomePage() {
       } catch (error) {
         if (!cancelled) {
           console.error("Error fetching collections:", error);
+          setCollectionsError(true);
         }
       }
     };
@@ -142,13 +161,14 @@ export default function HomePage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [retryKey]);
 
   useEffect(() => {
     let cancelled = false;
 
     const fetchCollections = async () => {
       try {
+        setProductsError(false);
         const entries = await Promise.all(
           resolvedPopularCollections.map(async (collection) => {
             if (!collection.handle) {
@@ -169,6 +189,7 @@ export default function HomePage() {
       } catch (error) {
         if (!cancelled) {
           console.error("Error fetching collection products:", error);
+          setProductsError(true);
         }
       }
     };
@@ -178,13 +199,27 @@ export default function HomePage() {
     return () => {
       cancelled = true;
     };
-  }, [resolvedPopularCollections]);
+  }, [resolvedPopularCollections, retryKey]);
+
+  useEffect(() => {
+    if (heroBanners.length < 2) return undefined;
+
+    const intervalId = setInterval(() => {
+      setBannerIndex((prev) => (prev + 1) % heroBanners.length);
+    }, 4000);
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   const handleCategoryChange = (key) => {
     if (key !== activeCategory) {
       setActiveCategory(key);
       setAnimKey((prev) => prev + 1);
     }
+  };
+
+  const handleRetry = () => {
+    setRetryKey((prev) => prev + 1);
   };
 
   const filteredProducts = (collectionProducts[activeCategory] || []).slice(
@@ -194,12 +229,39 @@ export default function HomePage() {
   const activeCategoryData = resolvedPopularCollections.find(
     (c) => c.key === activeCategory,
   );
+  const hasHomeError = collectionsError || productsError;
 
   return (
     <div className="homepage-container">
-      {/* Hero Placeholder */}
-      <section className="hero-placeholder">
-        {/* Placeholder for future hero banner */}
+      {/* Hero Banner Slider */}
+      <section className="hero-slider" aria-label="Hero banners">
+        <div
+          className="hero-slider-track"
+          style={{ transform: `translateX(-${bannerIndex * 100}%)` }}
+        >
+          {heroBanners.map((banner, index) => (
+            <div className="hero-slide" key={banner.src}>
+              <img
+                src={banner.src}
+                alt={banner.alt}
+                loading={index === 0 ? "eager" : "lazy"}
+                decoding="async"
+              />
+            </div>
+          ))}
+        </div>
+        <div className="hero-dots">
+          {heroBanners.map((_, index) => (
+            <button
+              key={`hero-dot-${index}`}
+              type="button"
+              className={`hero-dot ${bannerIndex === index ? "active" : ""}`}
+              onClick={() => setBannerIndex(index)}
+              aria-label={`Go to slide ${index + 1}`}
+              aria-current={bannerIndex === index ? "true" : "false"}
+            />
+          ))}
+        </div>
       </section>
 
       {/* Collection Tabs Section */}
@@ -207,6 +269,15 @@ export default function HomePage() {
         <h2 className="collection-tabs-heading">
           Discover Our Most Popular Picks
         </h2>
+
+        {hasHomeError && (
+          <div className="home-error">
+            <p>We are having trouble loading this section right now.</p>
+            <button className="home-error-btn" onClick={handleRetry}>
+              Try Again
+            </button>
+          </div>
+        )}
 
         {/* Category Tabs */}
         <div className="collection-tabs">

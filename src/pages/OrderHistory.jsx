@@ -11,7 +11,8 @@ const OrderHistory = () => {
   const { isAuthenticated, accessToken, loading: authLoading } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     if (authLoading) return;
@@ -23,19 +24,24 @@ const OrderHistory = () => {
 
     const fetchOrders = async () => {
       try {
+        setError(false);
         setLoading(true);
         const customerOrders = await getCustomerOrders(accessToken);
         setOrders(customerOrders);
       } catch (err) {
         console.error("Error fetching orders:", err);
-        setError(err.message);
+        setError(true);
       } finally {
         setLoading(false);
       }
     };
 
     fetchOrders();
-  }, [isAuthenticated, accessToken, authLoading]);
+  }, [isAuthenticated, accessToken, authLoading, retryKey]);
+
+  const handleRetry = () => {
+    setRetryKey((prev) => prev + 1);
+  };
 
   const getStatusLabel = (status) => {
     if (!status) return "";
@@ -87,10 +93,10 @@ const OrderHistory = () => {
         </div>
         <div className="orders-content">
           <div className="orders-empty">
-            <p>{error}</p>
+            <p>We could not load your order history right now.</p>
             <button
               className="orders-action-btn"
-              onClick={() => window.location.reload()}
+              onClick={handleRetry}
             >
               Try Again
             </button>

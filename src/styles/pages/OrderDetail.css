@@ -93,6 +93,10 @@
   background-color: #2563eb;
 }
 
+.error-state .back-link {
+  margin-top: 0.75rem;
+}
+
 /* Order Detail Content */
 .order-detail-content {
   display: flex;

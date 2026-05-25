@@ -33,7 +33,8 @@ export default function LoginPage() {
       await login(email, password);
       navigate("/account");
     } catch (err) {
-      setError(err.message || "Invalid email or password");
+      console.error("Login failed:", err);
+      setError("We could not sign you in. Please try again.");
     } finally {
       setLoading(false);
     }

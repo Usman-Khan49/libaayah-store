@@ -29,7 +29,6 @@ export const ROUTES = {
   ACCOUNT: "/account",
   LOGIN: "/login",
   REGISTER: "/register",
-  SEARCH: "/search",
 };
 
 // Cart Configuration

@@ -104,10 +104,13 @@ export default function ProductPage() {
   const [addedToCart, setAddedToCart] = useState(false);
   const [limitHit, setLimitHit] = useState(false);
   const [resolvedCollection, setResolvedCollection] = useState(null);
+  const [error, setError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setError(false);
         setLoading(true);
         const productData = await getProduct(handle);
         const allProducts = await getAllProducts(8);
@@ -120,13 +123,16 @@ export default function ProductPage() {
         }
       } catch (err) {
         console.error("Error fetching product:", err);
+        setError(true);
+        setProduct(null);
+        setRelatedProducts([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [handle]);
+  }, [handle, retryKey]);
 
   useEffect(() => {
     let cancelled = false;
@@ -266,6 +272,10 @@ export default function ProductPage() {
     });
   }, [maxQuantity, minQuantity]);
 
+  const handleRetry = () => {
+    setRetryKey((prev) => prev + 1);
+  };
+
   if (loading) {
     return (
       <div className="product-page-container">
@@ -286,6 +296,25 @@ export default function ProductPage() {
               <Skeleton className="skeleton-button" />
               <Skeleton className="skeleton-button" />
             </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="product-page-container">
+        <div className="product-error">
+          <h2>We could not load this product.</h2>
+          <p>Please try again in a moment.</p>
+          <div className="product-error-actions">
+            <button className="product-error-btn" onClick={handleRetry}>
+              Try Again
+            </button>
+            <Link to="/products" className="product-error-link">
+              Back to Products
+            </Link>
           </div>
         </div>
       </div>

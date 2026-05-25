@@ -13,7 +13,8 @@ const OrderDetail = () => {
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     if (authLoading) return;
@@ -25,6 +26,7 @@ const OrderDetail = () => {
 
     const fetchOrder = async () => {
       try {
+        setError(false);
         setLoading(true);
         const decodedId = decodeURIComponent(orderId);
         const orderData = await getCustomerOrder(accessToken, decodedId);
@@ -36,14 +38,14 @@ const OrderDetail = () => {
         setOrder(orderData);
       } catch (err) {
         console.error("Error fetching order:", err);
-        setError(err.message);
+        setError(true);
       } finally {
         setLoading(false);
       }
     };
 
     fetchOrder();
-  }, [isAuthenticated, accessToken, authLoading, orderId]);
+  }, [isAuthenticated, accessToken, authLoading, orderId, retryKey]);
 
   const formatAddress = (address) => {
     if (!address) return "N/A";
@@ -91,8 +93,13 @@ const OrderDetail = () => {
       <div className="order-detail-container">
         <div className="error-state">
           <h2>Error Loading Order</h2>
-          <p>{error}</p>
-          <button onClick={() => navigate("/orders")}>Back to Orders</button>
+          <p>We could not load this order right now.</p>
+          <button onClick={() => setRetryKey((prev) => prev + 1)}>
+            Try Again
+          </button>
+          <Link to="/orders" className="back-link">
+            Back to Orders
+          </Link>
         </div>
         <Footer />
       </div>

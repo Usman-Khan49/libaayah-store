@@ -46,7 +46,8 @@ export default function RegisterPage() {
       await register(firstName, lastName, email, password);
       navigate("/account");
     } catch (err) {
-      setError(err.message || "Failed to create account");
+      console.error("Registration failed:", err);
+      setError("We could not create your account. Please try again.");
     } finally {
       setLoading(false);
     }
