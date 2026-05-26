@@ -165,7 +165,28 @@ const OrderDetail = () => {
                 <div key={index} className="order-item">
                   {item.variant?.image?.url && (
                     <img
-                      src={item.variant.image.url}
+                      src={
+                        item.variant.image.url ||
+                        item.variant.image.url_240 ||
+                        item.variant.image.url_160 ||
+                        item.variant.image.url_120 ||
+                        item.variant.image.url_80
+                      }
+                      srcSet={
+                        [
+                          item.variant.image.url_80 &&
+                            `${item.variant.image.url_80} 80w`,
+                          item.variant.image.url_120 &&
+                            `${item.variant.image.url_120} 120w`,
+                          item.variant.image.url_160 &&
+                            `${item.variant.image.url_160} 160w`,
+                          item.variant.image.url &&
+                            `${item.variant.image.url} 240w`,
+                        ]
+                          .filter(Boolean)
+                          .join(", ") || undefined
+                      }
+                      sizes="120px"
                       alt={item.variant.image.altText || item.title}
                       className="order-item-image"
                     />

@@ -88,7 +88,34 @@ export async function getProductsWithFilters(
                 edges {
                   node {
                     altText 
-                    url
+                    url_240: url(
+                      transform: {
+                        maxWidth: 240
+                        maxHeight: 360
+                        preferredContentType: WEBP
+                      }
+                    )
+                    url_360: url(
+                      transform: {
+                        maxWidth: 360
+                        maxHeight: 540
+                        preferredContentType: WEBP
+                      }
+                    )
+                    url_480: url(
+                      transform: {
+                        maxWidth: 480
+                        maxHeight: 720
+                        preferredContentType: WEBP
+                      }
+                    )
+                    url: url(
+                      transform: {
+                        maxWidth: 600
+                        maxHeight: 900
+                        preferredContentType: WEBP
+                      }
+                    )
                   }
                 }
               }
@@ -199,7 +226,34 @@ export async function getCollectionProductsWithFilters(
                 edges {
                   node {
                     altText
-                    url
+                    url_240: url(
+                      transform: {
+                        maxWidth: 240
+                        maxHeight: 360
+                        preferredContentType: WEBP
+                      }
+                    )
+                    url_360: url(
+                      transform: {
+                        maxWidth: 360
+                        maxHeight: 540
+                        preferredContentType: WEBP
+                      }
+                    )
+                    url_480: url(
+                      transform: {
+                        maxWidth: 480
+                        maxHeight: 720
+                        preferredContentType: WEBP
+                      }
+                    )
+                    url: url(
+                      transform: {
+                        maxWidth: 600
+                        maxHeight: 900
+                        preferredContentType: WEBP
+                      }
+                    )
                   }
                 }
               }
@@ -366,7 +420,34 @@ export async function getAllProducts(limit = 20) {
               edges{
                 node{
                   altText 
-                  url
+                  url_240: url(
+                    transform: {
+                      maxWidth: 240
+                      maxHeight: 360
+                      preferredContentType: WEBP
+                    }
+                  )
+                  url_360: url(
+                    transform: {
+                      maxWidth: 360
+                      maxHeight: 540
+                      preferredContentType: WEBP
+                    }
+                  )
+                  url_480: url(
+                    transform: {
+                      maxWidth: 480
+                      maxHeight: 720
+                      preferredContentType: WEBP
+                    }
+                  )
+                  url: url(
+                    transform: {
+                      maxWidth: 600
+                      maxHeight: 900
+                      preferredContentType: WEBP
+                    }
+                  )
                 }
               }
             }
@@ -433,7 +514,41 @@ export async function getProduct(handle) {
         images(first: 10) {
           edges {
             node {
-              url
+              url_600: url(
+                transform: {
+                  maxWidth: 600
+                  maxHeight: 800
+                  preferredContentType: WEBP
+                }
+              )
+              url_900: url(
+                transform: {
+                  maxWidth: 900
+                  maxHeight: 1200
+                  preferredContentType: WEBP
+                }
+              )
+              url_1200: url(
+                transform: {
+                  maxWidth: 1200
+                  maxHeight: 1600
+                  preferredContentType: WEBP
+                }
+              )
+              url_1600: url(
+                transform: {
+                  maxWidth: 1600
+                  maxHeight: 2134
+                  preferredContentType: WEBP
+                }
+              )
+              url: url(
+                transform: {
+                  maxWidth: 1200
+                  maxHeight: 1600
+                  preferredContentType: WEBP
+                }
+              )
               altText
             }
           }
@@ -499,7 +614,34 @@ export async function getShoppableReels(limit = 20) {
               reference {
                 ... on MediaImage {
                   image {
-                    url
+                    url_240: url(
+                      transform: {
+                        maxWidth: 240
+                        maxHeight: 400
+                        preferredContentType: WEBP
+                      }
+                    )
+                    url_360: url(
+                      transform: {
+                        maxWidth: 360
+                        maxHeight: 600
+                        preferredContentType: WEBP
+                      }
+                    )
+                    url_480: url(
+                      transform: {
+                        maxWidth: 480
+                        maxHeight: 800
+                        preferredContentType: WEBP
+                      }
+                    )
+                    url: url(
+                      transform: {
+                        maxWidth: 600
+                        maxHeight: 1000
+                        preferredContentType: WEBP
+                      }
+                    )
                     altText
                   }
                 }
@@ -509,7 +651,34 @@ export async function getShoppableReels(limit = 20) {
                     mimeType
                   }
                   previewImage {
-                    url
+                    url_240: url(
+                      transform: {
+                        maxWidth: 240
+                        maxHeight: 400
+                        preferredContentType: WEBP
+                      }
+                    )
+                    url_360: url(
+                      transform: {
+                        maxWidth: 360
+                        maxHeight: 600
+                        preferredContentType: WEBP
+                      }
+                    )
+                    url_480: url(
+                      transform: {
+                        maxWidth: 480
+                        maxHeight: 800
+                        preferredContentType: WEBP
+                      }
+                    )
+                    url: url(
+                      transform: {
+                        maxWidth: 600
+                        maxHeight: 1000
+                        preferredContentType: WEBP
+                      }
+                    )
                     altText
                   }
                 }
@@ -536,7 +705,34 @@ export async function getShoppableReels(limit = 20) {
                     }
                   }
                   featuredImage {
-                    url
+                    url_60: url(
+                      transform: {
+                        maxWidth: 60
+                        maxHeight: 60
+                        preferredContentType: WEBP
+                      }
+                    )
+                    url_80: url(
+                      transform: {
+                        maxWidth: 80
+                        maxHeight: 80
+                        preferredContentType: WEBP
+                      }
+                    )
+                    url_120: url(
+                      transform: {
+                        maxWidth: 120
+                        maxHeight: 120
+                        preferredContentType: WEBP
+                      }
+                    )
+                    url: url(
+                      transform: {
+                        maxWidth: 240
+                        maxHeight: 240
+                        preferredContentType: WEBP
+                      }
+                    )
                     altText
                   }
                 }
@@ -581,7 +777,34 @@ export async function getProductReels(handle, limit = 10) {
                     reference {
                       ... on MediaImage {
                         image {
-                          url
+                          url_240: url(
+                            transform: {
+                              maxWidth: 240
+                              maxHeight: 400
+                              preferredContentType: WEBP
+                            }
+                          )
+                          url_360: url(
+                            transform: {
+                              maxWidth: 360
+                              maxHeight: 600
+                              preferredContentType: WEBP
+                            }
+                          )
+                          url_480: url(
+                            transform: {
+                              maxWidth: 480
+                              maxHeight: 800
+                              preferredContentType: WEBP
+                            }
+                          )
+                          url: url(
+                            transform: {
+                              maxWidth: 600
+                              maxHeight: 1000
+                              preferredContentType: WEBP
+                            }
+                          )
                           altText
                         }
                       }
@@ -591,7 +814,34 @@ export async function getProductReels(handle, limit = 10) {
                           mimeType
                         }
                         previewImage {
-                          url
+                          url_240: url(
+                            transform: {
+                              maxWidth: 240
+                              maxHeight: 400
+                              preferredContentType: WEBP
+                            }
+                          )
+                          url_360: url(
+                            transform: {
+                              maxWidth: 360
+                              maxHeight: 600
+                              preferredContentType: WEBP
+                            }
+                          )
+                          url_480: url(
+                            transform: {
+                              maxWidth: 480
+                              maxHeight: 800
+                              preferredContentType: WEBP
+                            }
+                          )
+                          url: url(
+                            transform: {
+                              maxWidth: 600
+                              maxHeight: 1000
+                              preferredContentType: WEBP
+                            }
+                          )
                           altText
                         }
                       }
@@ -618,7 +868,34 @@ export async function getProductReels(handle, limit = 10) {
                           }
                         }
                         featuredImage {
-                          url
+                          url_60: url(
+                            transform: {
+                              maxWidth: 60
+                              maxHeight: 60
+                              preferredContentType: WEBP
+                            }
+                          )
+                          url_80: url(
+                            transform: {
+                              maxWidth: 80
+                              maxHeight: 80
+                              preferredContentType: WEBP
+                            }
+                          )
+                          url_120: url(
+                            transform: {
+                              maxWidth: 120
+                              maxHeight: 120
+                              preferredContentType: WEBP
+                            }
+                          )
+                          url: url(
+                            transform: {
+                              maxWidth: 240
+                              maxHeight: 240
+                              preferredContentType: WEBP
+                            }
+                          )
                           altText
                         }
                       }

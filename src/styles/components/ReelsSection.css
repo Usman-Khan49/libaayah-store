@@ -16,24 +16,12 @@
   justify-content: center;
   max-width: none;
   margin: 0 auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .reels-container::-webkit-scrollbar {
-  height: 8px;
-}
-
-.reels-container::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.reels-container::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 10px;
-}
-
-.reels-container::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  display: none;
 }
 
 .reel-card {

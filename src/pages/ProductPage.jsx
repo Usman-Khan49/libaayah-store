@@ -86,6 +86,29 @@ const getOptionValue = (variant, label) => {
   return match?.value || null;
 };
 
+const getGalleryImageSrc = (image) => {
+  return (
+    image?.url ||
+    image?.url_1200 ||
+    image?.url_900 ||
+    image?.url_600 ||
+    image?.url_1600 ||
+    ""
+  );
+};
+
+const getGalleryImageSrcSet = (image) => {
+  return [
+    image?.url_600 && `${image.url_600} 600w`,
+    image?.url_900 && `${image.url_900} 900w`,
+    image?.url_1200 && `${image.url_1200} 1200w`,
+    image?.url_1600 && `${image.url_1600} 1600w`,
+    image?.url && `${image.url} 1200w`,
+  ]
+    .filter(Boolean)
+    .join(", ");
+};
+
 export default function ProductPage() {
   const { handle } = useParams();
   const location = useLocation();
@@ -353,13 +376,44 @@ export default function ProductPage() {
     return (mp4 || sources[0])?.url || null;
   };
 
-  const getReelPoster = (reel) => {
+  const getReelPosterImage = (reel) => {
     return (
-      reel?.thumbnail?.image?.url ||
-      reel?.video?.previewImage?.url ||
-      reel?.product?.featuredImage?.url ||
+      reel?.thumbnail?.image ||
+      reel?.video?.previewImage ||
+      reel?.product?.featuredImage ||
+      null
+    );
+  };
+
+  const getReelPosterUrl = (image) => {
+    return (
+      image?.url ||
+      image?.url_480 ||
+      image?.url_360 ||
+      image?.url_240 ||
+      image?.url_120 ||
+      image?.url_80 ||
       ""
     );
+  };
+
+  const getReelPosterSrcSet = (image) => {
+    if (!image) return "";
+    const candidates = [
+      image.url_60 && `${image.url_60} 60w`,
+      image.url_80 && `${image.url_80} 80w`,
+      image.url_120 && `${image.url_120} 120w`,
+      image.url_240 && `${image.url_240} 240w`,
+      image.url_360 && `${image.url_360} 360w`,
+      image.url_480 && `${image.url_480} 480w`,
+    ].filter(Boolean);
+
+    const fallbackWidth = image.url_240 ? 600 : 240;
+    if (image.url) {
+      candidates.push(`${image.url} ${fallbackWidth}w`);
+    }
+
+    return candidates.join(", ");
   };
 
   const openReelModal = (index) => {
@@ -460,6 +514,10 @@ export default function ProductPage() {
   }
 
   const images = product.images?.edges || [];
+  const mainImageNode =
+    images[selectedImage]?.node || images[0]?.node || null;
+  const mainImageSrc = getGalleryImageSrc(mainImageNode);
+  const mainImageSrcSet = getGalleryImageSrcSet(mainImageNode);
   const price = variant?.price;
   const colorValue =
     getMetafieldValue(product.colorPattern?.value) ||
@@ -488,9 +546,13 @@ export default function ProductPage() {
   const descriptionHtml = product.descriptionHtml || "";
   const previewReel = productReels[0] || null;
   const previewVideo = getReelVideoSource(previewReel);
-  const previewPoster = getReelPoster(previewReel);
+  const previewPosterImage = getReelPosterImage(previewReel);
+  const previewPoster = getReelPosterUrl(previewPosterImage);
+  const previewPosterSrcSet = getReelPosterSrcSet(previewPosterImage);
   const activeReel =
     selectedReelIndex !== null ? productReels[selectedReelIndex] : null;
+  const activeReelPosterImage = getReelPosterImage(activeReel);
+  const activeReelPoster = getReelPosterUrl(activeReelPosterImage);
   const activeReelProduct = activeReel?.product || product;
   const reelPrice =
     activeReel?.product?.priceRange?.minVariantPrice || price;
@@ -535,7 +597,9 @@ export default function ProductPage() {
           {/* Mobile Main Image */}
           <div className="mobile-main-image">
             <img
-              src={images[selectedImage]?.node.url || images[0]?.node.url}
+              src={mainImageSrc}
+              srcSet={mainImageSrcSet || undefined}
+              sizes="100vw"
               alt={product.title}
             />
           </div>
@@ -549,6 +613,11 @@ export default function ProductPage() {
                 !isFirstImage &&
                 remainingAfterFirst % 2 !== 0 &&
                 index === images.length - 1;
+              const imageSrc = getGalleryImageSrc(img.node);
+              const imageSrcSet = getGalleryImageSrcSet(img.node);
+              const imageSizes = isFirstImage || isLastAndOdd
+                ? "(max-width: 768px) 100vw, 60vw"
+                : "(max-width: 768px) 50vw, 30vw";
               return (
                 <div
                   key={index}
@@ -558,7 +627,9 @@ export default function ProductPage() {
                   onClick={() => setSelectedImage(index)}
                 >
                   <img
-                    src={img.node.url}
+                    src={imageSrc}
+                    srcSet={imageSrcSet || undefined}
+                    sizes={imageSizes}
                     alt={`${product.title} - Image ${index + 1}`}
                   />
                 </div>
@@ -719,15 +790,23 @@ export default function ProductPage() {
                 className="pdp-reel-video"
                 src={previewVideo}
                 poster={previewPoster}
+                autoPlay
                 muted
                 loop
                 playsInline
-                preload="metadata"
+                preload="auto"
+                onLoadedData={(e) => {
+                  e.target.play().catch((err) => {
+                    console.log("Preview autoplay blocked:", err);
+                  });
+                }}
               />
             ) : (
               previewPoster && (
                 <img
                   src={previewPoster}
+                  srcSet={previewPosterSrcSet || undefined}
+                  sizes="(max-width: 768px) 110px, 130px"
                   alt={previewReel?.title || "Product reel"}
                   className="pdp-reel-video"
                   loading="lazy"
@@ -808,7 +887,7 @@ export default function ProductPage() {
                 ref={modalVideoRef}
                 className="reel-modal-video"
                 src={getReelVideoSource(activeReel)}
-                poster={getReelPoster(activeReel)}
+                poster={activeReelPoster}
                 autoPlay
                 loop
                 playsInline

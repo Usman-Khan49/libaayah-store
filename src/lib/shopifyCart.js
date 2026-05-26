@@ -27,7 +27,27 @@ export async function createCart(lines = []) {
                       title
                       handle
                       featuredImage {
-                        url
+                        url_120: url(
+                          transform: {
+                            maxWidth: 120
+                            maxHeight: 160
+                            preferredContentType: WEBP
+                          }
+                        )
+                        url_180: url(
+                          transform: {
+                            maxWidth: 180
+                            maxHeight: 240
+                            preferredContentType: WEBP
+                          }
+                        )
+                        url: url(
+                          transform: {
+                            maxWidth: 240
+                            maxHeight: 320
+                            preferredContentType: WEBP
+                          }
+                        )
                         altText
                       }
                     }
@@ -103,7 +123,27 @@ export async function addToCart(cartId, lines) {
                       title
                       handle
                       featuredImage {
-                        url
+                        url_120: url(
+                          transform: {
+                            maxWidth: 120
+                            maxHeight: 160
+                            preferredContentType: WEBP
+                          }
+                        )
+                        url_180: url(
+                          transform: {
+                            maxWidth: 180
+                            maxHeight: 240
+                            preferredContentType: WEBP
+                          }
+                        )
+                        url: url(
+                          transform: {
+                            maxWidth: 240
+                            maxHeight: 320
+                            preferredContentType: WEBP
+                          }
+                        )
                         altText
                       }
                     }
@@ -177,7 +217,27 @@ export async function updateCartLine(cartId, lineId, quantity) {
                       title
                       handle
                       featuredImage {
-                        url
+                        url_120: url(
+                          transform: {
+                            maxWidth: 120
+                            maxHeight: 160
+                            preferredContentType: WEBP
+                          }
+                        )
+                        url_180: url(
+                          transform: {
+                            maxWidth: 180
+                            maxHeight: 240
+                            preferredContentType: WEBP
+                          }
+                        )
+                        url: url(
+                          transform: {
+                            maxWidth: 240
+                            maxHeight: 320
+                            preferredContentType: WEBP
+                          }
+                        )
                         altText
                       }
                     }

@@ -217,7 +217,34 @@ export async function getCustomerOrders(customerAccessToken, first = 20) {
                         currencyCode
                       }
                       image {
-                        url
+                        url_80: url(
+                          transform: {
+                            maxWidth: 80
+                            maxHeight: 80
+                            preferredContentType: WEBP
+                          }
+                        )
+                        url_120: url(
+                          transform: {
+                            maxWidth: 120
+                            maxHeight: 120
+                            preferredContentType: WEBP
+                          }
+                        )
+                        url_160: url(
+                          transform: {
+                            maxWidth: 160
+                            maxHeight: 160
+                            preferredContentType: WEBP
+                          }
+                        )
+                        url: url(
+                          transform: {
+                            maxWidth: 240
+                            maxHeight: 240
+                            preferredContentType: WEBP
+                          }
+                        )
                         altText
                       }
                     }

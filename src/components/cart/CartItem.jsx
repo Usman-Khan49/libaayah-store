@@ -11,6 +11,16 @@ export default function CartItem({ item }) {
   const merchandise = item.merchandise;
   const product = merchandise.product;
   const isUpdating = updatingLineId === item.id;
+  const imageNode = product.featuredImage;
+  const imageSrc =
+    imageNode?.url || imageNode?.url_240 || imageNode?.url_180 || imageNode?.url_120;
+  const imageSrcSet = [
+    imageNode?.url_120 && `${imageNode.url_120} 120w`,
+    imageNode?.url_180 && `${imageNode.url_180} 180w`,
+    imageNode?.url && `${imageNode.url} 240w`,
+  ]
+    .filter(Boolean)
+    .join(", ");
 
   const handleQuantityChange = async (newQuantity) => {
     if (newQuantity < 1 || updatingLineId) return;
@@ -37,7 +47,9 @@ export default function CartItem({ item }) {
         <Link to={`/product/${product.handle}`} className="cart-item-image">
           {product.featuredImage ? (
             <img
-              src={product.featuredImage.url}
+              src={imageSrc}
+              srcSet={imageSrcSet || undefined}
+              sizes="120px"
               alt={product.featuredImage.altText || product.title}
               loading="lazy"
               decoding="async"

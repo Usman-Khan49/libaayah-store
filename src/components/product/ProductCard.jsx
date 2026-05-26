@@ -18,6 +18,21 @@ export default function ProductCard({ product }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
+  const imageNode = product.images.edges[0]?.node;
+  const imageSrc =
+    imageNode?.url ||
+    imageNode?.url_600 ||
+    imageNode?.url_480 ||
+    imageNode?.url_360 ||
+    imageNode?.url_240;
+  const imageSrcSet = [
+    imageNode?.url_240 && `${imageNode.url_240} 240w`,
+    imageNode?.url_360 && `${imageNode.url_360} 360w`,
+    imageNode?.url_480 && `${imageNode.url_480} 480w`,
+    imageNode?.url && `${imageNode.url} 600w`,
+  ]
+    .filter(Boolean)
+    .join(", ");
 
   const handleWishlistClick = (e) => {
     e.preventDefault();
@@ -58,7 +73,9 @@ export default function ProductCard({ product }) {
       {/* Product Image */}
       <div className="productImageWrapper">
         <img
-          src={product.images.edges[0]?.node.url}
+          src={imageSrc}
+          srcSet={imageSrcSet || undefined}
+          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
           alt={product.title || "Product"}
           className="productImage"
           loading="lazy"

@@ -119,11 +119,43 @@ export default function ReelsSection() {
 
   const getReelPoster = (reel) => {
     return (
-      reel?.thumbnail?.image?.url ||
-      reel?.video?.previewImage?.url ||
-      reel?.product?.featuredImage?.url ||
+      reel?.thumbnail?.image ||
+      reel?.video?.previewImage ||
+      null
+    );
+  };
+
+  const getReelPosterUrl = (image, fallbackImage) => {
+    return (
+      image?.url ||
+      image?.url_480 ||
+      image?.url_360 ||
+      image?.url_240 ||
+      fallbackImage?.url ||
+      fallbackImage?.url_120 ||
+      fallbackImage?.url_80 ||
+      fallbackImage?.url_60 ||
       ""
     );
+  };
+
+  const getReelPosterSrcSet = (image) => {
+    if (!image) return "";
+    const candidates = [
+      image.url_60 && `${image.url_60} 60w`,
+      image.url_80 && `${image.url_80} 80w`,
+      image.url_120 && `${image.url_120} 120w`,
+      image.url_240 && `${image.url_240} 240w`,
+      image.url_360 && `${image.url_360} 360w`,
+      image.url_480 && `${image.url_480} 480w`,
+    ].filter(Boolean);
+
+    const fallbackWidth = image.url_240 ? 600 : 240;
+    if (image.url) {
+      candidates.push(`${image.url} ${fallbackWidth}w`);
+    }
+
+    return candidates.join(", ");
   };
 
   const getReelLabel = (reel) => {
@@ -141,7 +173,28 @@ export default function ReelsSection() {
   };
 
   const getReelProductImage = (reel) => {
-    return reel?.product?.featuredImage?.url || getReelPoster(reel);
+    return reel?.product?.featuredImage || null;
+  };
+
+  const getReelProductImageSrc = (image) => {
+    return (
+      image?.url ||
+      image?.url_120 ||
+      image?.url_80 ||
+      image?.url_60 ||
+      ""
+    );
+  };
+
+  const getReelProductImageSrcSet = (image) => {
+    return [
+      image?.url_60 && `${image.url_60} 60w`,
+      image?.url_80 && `${image.url_80} 80w`,
+      image?.url_120 && `${image.url_120} 120w`,
+      image?.url && `${image.url} 240w`,
+    ]
+      .filter(Boolean)
+      .join(", ");
   };
 
   const openReelModal = (index) => {
@@ -178,11 +231,15 @@ export default function ReelsSection() {
       <div className="reels-container" ref={containerRef}>
         {reels.map((reel, index) => {
           const videoUrl = getReelVideoSource(reel);
-          const posterUrl = getReelPoster(reel);
 
           const colorValue = getReelColor(reel);
           const productImage = getReelProductImage(reel);
           const productTitle = reel?.product?.title || getReelLabel(reel);
+          const posterImage = getReelPoster(reel);
+          const posterUrl = getReelPosterUrl(posterImage, productImage);
+          const posterSrcSet = getReelPosterSrcSet(posterImage);
+          const productThumbSrc = getReelProductImageSrc(productImage);
+          const productThumbSrcSet = getReelProductImageSrcSet(productImage);
 
           return (
           <div
@@ -218,6 +275,8 @@ export default function ReelsSection() {
               {posterUrl ? (
                 <img
                   src={posterUrl}
+                  srcSet={posterSrcSet || undefined}
+                  sizes="(max-width: 768px) 195px, 277px"
                   alt={getReelLabel(reel)}
                   className="reel-fallback"
                   loading="lazy"
@@ -229,7 +288,9 @@ export default function ReelsSection() {
                 <div className="reel-mini-card">
                   {productImage && (
                     <img
-                      src={productImage}
+                      src={productThumbSrc}
+                      srcSet={productThumbSrcSet || undefined}
+                      sizes="36px"
                       alt={productTitle}
                       className="reel-mini-thumb"
                       loading="lazy"
@@ -314,11 +375,17 @@ export default function ReelsSection() {
               {/* Product card in modal */}
               <div className="reel-modal-product-card">
                 <div className="prod-detail-container">
-                  {reels[selectedReel]?.product?.featuredImage?.url && (
+                  {reels[selectedReel]?.product?.featuredImage && (
                     <img
-                      src={
-                        reels[selectedReel].product.featuredImage.url
+                      src={getReelProductImageSrc(
+                        reels[selectedReel].product.featuredImage,
+                      )}
+                      srcSet={
+                        getReelProductImageSrcSet(
+                          reels[selectedReel].product.featuredImage,
+                        ) || undefined
                       }
+                      sizes="40px"
                       alt={reels[selectedReel].product.title}
                       className="reel-product-thumb"
                       loading="lazy"
