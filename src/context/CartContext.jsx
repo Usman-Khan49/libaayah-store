@@ -175,10 +175,16 @@ export const CartProvider = ({ children }) => {
   };
 
   // Proceed to Shopify checkout
-  const checkout = () => {
-    if (cart?.checkoutUrl) {
-      window.location.href = cart.checkoutUrl;
+  const checkout = (checkoutUrl) => {
+    const url =
+      typeof checkoutUrl === "string" ? checkoutUrl : cart?.checkoutUrl;
+    if (url) {
+      window.location.assign(url);
+      return true;
     }
+
+    console.error("No checkout URL available for redirect.");
+    return false;
   };
 
   // Get total item count in cart

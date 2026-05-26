@@ -46,15 +46,35 @@ export default function ReelsSection() {
     };
   }, []);
 
-  // Auto-play videos when reels load
+  // Play/pause reels based on visibility to avoid loading all videos at once
   useEffect(() => {
-    videoRefs.current.forEach((video) => {
-      if (video) {
-        video.play().catch((error) => {
-          console.log("Video autoplay prevented:", error);
+    const container = containerRef.current;
+    if (!container) return undefined;
+
+    const cards = Array.from(container.querySelectorAll(".reel-card"));
+    if (cards.length === 0) return undefined;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const video = entry.target.querySelector("video");
+          if (!video) return;
+
+          if (entry.isIntersecting) {
+            video.play().catch((error) => {
+              console.log("Video autoplay prevented:", error);
+            });
+          } else {
+            video.pause();
+          }
         });
-      }
-    });
+      },
+      { root: container, threshold: 0.6 },
+    );
+
+    cards.forEach((card) => observer.observe(card));
+
+    return () => observer.disconnect();
   }, [reels]);
 
   // Handle scroll to update focused card on mobile

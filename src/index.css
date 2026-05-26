@@ -16,4 +16,10 @@ body {
   color: #2A2A2A;
 }
 
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 

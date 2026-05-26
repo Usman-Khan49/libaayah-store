@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getCustomerOrder } from "../lib/shopifyCustomer";
 import { formatDateTime, formatPrice, getStatusColor } from "../utils";
@@ -10,7 +10,6 @@ import "../styles/pages/OrderDetail.css";
 const OrderDetail = () => {
   const { orderId } = useParams();
   const { isAuthenticated, accessToken, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);

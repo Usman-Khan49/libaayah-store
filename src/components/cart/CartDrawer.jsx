@@ -6,7 +6,7 @@ import CartItem from "./CartItem";
 import "../../styles/components/CartDrawer.css";
 
 export default function CartDrawer({ isOpen, onClose }) {
-  const { cart, loading, getCartSubtotal, getCartItemCount, updatingLineId } = useCart();
+  const { cart, loading, getCartSubtotal, updatingLineId, checkout } = useCart();
 
   // Prevent body scroll when drawer is open
   useEffect(() => {
@@ -34,7 +34,6 @@ export default function CartDrawer({ isOpen, onClose }) {
   }, [isOpen, onClose]);
 
   const subtotal = getCartSubtotal();
-  const itemCount = getCartItemCount();
   const cartLines = cart?.lines?.edges || [];
 
   return (
@@ -118,14 +117,13 @@ export default function CartDrawer({ isOpen, onClose }) {
               <p className="cart-note">
                 Shipping and taxes calculated at checkout
               </p>
-              <a
-                href={cart.checkoutUrl}
+              <button
                 className="checkout-button"
-                target="_blank"
-                rel="noopener noreferrer"
+                type="button"
+                onClick={checkout}
               >
                 Proceed to Checkout
-              </a>
+              </button>
               <button className="continue-shopping-link" onClick={onClose}>
                 Continue Shopping
               </button>

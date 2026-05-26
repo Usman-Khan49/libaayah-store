@@ -11,7 +11,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../hooks/useCart";
 import CartDrawer from "../cart/CartDrawer";
 import "../../styles/components/Header.css";
-import logoImg from "../../assets/Logo.png";
+import logoImg from "../../assets/logo.png";
 import collectionImg from "../../assets/img36.jpg";
 import userIcon from "../../assets/user.png";
 import heartIcon from "../../assets/heart.png";

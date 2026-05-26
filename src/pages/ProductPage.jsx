@@ -116,7 +116,7 @@ export default function ProductPage() {
   const collectionParam =
     searchParams.get("collection") || searchParams.get("category");
   const fabricParam = searchParams.get("fabric");
-  const { addItem } = useCart();
+  const { addItem, checkout } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
@@ -297,11 +297,10 @@ export default function ProductPage() {
     try {
       setBuyingNow(true);
       const cartData = await addItem(variant.id, safeQuantity);
-      if (cartData?.checkoutUrl) {
-        window.location.href = cartData.checkoutUrl;
-        return;
+      const didRedirect = checkout(cartData?.checkoutUrl);
+      if (!didRedirect) {
+        console.error("No checkout URL found after adding item.");
       }
-      console.error("No checkout URL found after adding item.");
     } catch (error) {
       console.error("Failed to process Buy Now:", error);
     } finally {
