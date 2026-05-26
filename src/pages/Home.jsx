@@ -9,7 +9,7 @@ import ReelsSection from "../components/layout/ReelsSection";
 import ProductCard from "../components/product/ProductCard";
 import ProductsCarousel from "../components/layout/ProductsCarousel";
 import UtilitiesSection from "../components/layout/UtilitiesSection";
-import showcaseVideo from "../assets/Bottom_Banner.mp4";
+import bottomBannerImg from "../assets/bottom_banner.png";
 import bannerImageOne from "../assets/Banner_image_1.png";
 import bannerImageTwo from "../assets/Banner_image_2.png";
 import unstitchedImg from "../assets/img36.jpg";
@@ -336,19 +336,16 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Showcase Video + CTA Section */}
+      {/* Showcase Banner + CTA Section */}
       <section className="showcase-section">
         <div className="showcase-video-wrapper">
-          <video
-            className="showcase-video"
-            muted
-            loop
-            playsInline
-            autoPlay
-            preload="metadata"
-          >
-            <source src={showcaseVideo} type="video/mp4" />
-          </video>
+          <img
+            className="showcase-image"
+            src={bottomBannerImg}
+            alt="Libaayah showcase banner"
+            loading="lazy"
+            decoding="async"
+          />
         </div>
         <div className="showcase-text">
           <h2 className="showcase-heading">Crafted with Passion</h2>
