@@ -87,11 +87,13 @@ const getOptionValue = (variant, label) => {
 
 const getGalleryImageSrc = (image) => {
   return (
-    image?.url ||
-    image?.url_1200 ||
-    image?.url_900 ||
+    image?.url_720 ||
+    image?.url_960 ||
     image?.url_600 ||
-    image?.url_1600 ||
+    image?.url_480 ||
+    image?.url_360 ||
+    image?.url_240 ||
+    image?.url ||
     ""
   );
 };
@@ -102,10 +104,9 @@ const getGalleryImageSrcSet = (image) => {
     image?.url_360 && `${image.url_360} 360w`,
     image?.url_480 && `${image.url_480} 480w`,
     image?.url_600 && `${image.url_600} 600w`,
-    image?.url_900 && `${image.url_900} 900w`,
-    image?.url_1200 && `${image.url_1200} 1200w`,
-    image?.url_1600 && `${image.url_1600} 1600w`,
-    image?.url && `${image.url} 1200w`,
+    image?.url_720 && `${image.url_720} 720w`,
+    image?.url_960 && `${image.url_960} 960w`,
+    image?.url && `${image.url} 960w`,
   ]
     .filter(Boolean)
     .join(", ");

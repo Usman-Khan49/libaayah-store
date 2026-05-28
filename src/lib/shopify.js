@@ -41,6 +41,27 @@ export default async function shopifyFetch(query, variables = {}) {
     headers: {
       "Content-Type": "application/json",
       "X-Shopify-Storefront-Access-Token": STOREFRONT_TOKEN,
+      url_240: url(
+        transform: {
+        maxWidth: 240
+                  maxHeight: 320
+                  preferredContentType: WEBP
+      }
+      )
+              url_360: url(
+        transform: {
+        maxWidth: 360
+                  maxHeight: 480
+                  preferredContentType: WEBP
+      }
+      )
+              url_480: url(
+        transform: {
+        maxWidth: 480
+                  maxHeight: 640
+                  preferredContentType: WEBP
+      }
+      )
     },
     body: JSON.stringify({ query, variables }),
   });
@@ -48,107 +69,100 @@ export default async function shopifyFetch(query, variables = {}) {
     throw new Error("HTTP error: " + response.status);
   }
   const result = await response.json();
-
+  url_720: url(
   if (result.errors) {
-    throw new Error(`GraphQL errors: ${JSON.stringify(result.errors)}`);
+    maxWidth: 720
+    maxHeight: 960
+    return result.data;
   }
-  return result.data;
-}
 
-export async function getProductsWithFilters(
-  limit = 20,
-  activeFilters = [],
-  sortKey = "RELEVANCE",
+  url_960: url(
+    limit = 20,
+    maxWidth: 960
+                  maxHeight: 1280
   reverse = false,
-  searchQuery = "*",
-) {
-  const query = `
-    query getProducts($first: Int!, $filters: [ProductFilter!], $sortKey: SearchSortKeys, $reverse: Boolean, $query: String!) {
-      search(query: $query, first: $first, productFilters: $filters, sortKey: $sortKey, reverse: $reverse, types: PRODUCT) {
-        productFilters {
-          id
-          label
-          type
+    searchQuery = "*",
+  ) {
           values {
-            id
-            label
-            count
-            input
-          }
-        }
+      id
+      maxWidth: 960
+      maxHeight: 1280
+      input
+    }
+  }
         edges {
           node {
             ... on Product {
-              id 
-              handle 
-              title 
-              availableForSale
-              tags
-              images(first: 1) {
+        id
+        handle
+        title
+        availableForSale
+        tags
+        images(first: 1) {
                 edges {
                   node {
-                    altText 
-                    url_240: url(
-                      transform: {
-                        maxWidth: 240
+              altText
+              url_240: url(
+                transform: {
+                maxWidth: 240
                         maxHeight: 360
                         preferredContentType: WEBP
-                      }
-                    )
-                    url_360: url(
-                      transform: {
-                        maxWidth: 360
+              }
+              )
+              url_360: url(
+                transform: {
+                maxWidth: 360
                         maxHeight: 540
                         preferredContentType: WEBP
-                      }
-                    )
-                    url_480: url(
-                      transform: {
-                        maxWidth: 480
+              }
+              )
+              url_480: url(
+                transform: {
+                maxWidth: 480
                         maxHeight: 720
                         preferredContentType: WEBP
-                      }
-                    )
-                    url: url(
-                      transform: {
-                        maxWidth: 600
+              }
+              )
+              url: url(
+                transform: {
+                maxWidth: 600
                         maxHeight: 900
                         preferredContentType: WEBP
-                      }
-                    )
-                  }
-                }
               }
+              )
+            }
+          }
+        }
               options {
-                name
-                values
-              }
-              variants(first: 10) {
+          name
+          values
+        }
+        variants(first: 10) {
                 edges {
                   node {
-                    id
-                    availableForSale
+              id
+              availableForSale
                     selectedOptions {
-                      name
-                      value
-                    }
+                name
+                value
+              }
                     price {
-                      amount
-                      currencyCode
-                    }
+                amount
+                currencyCode
+              }
                     compareAtPrice {
-                      amount
-                      currencyCode
-                    }
-                  }
-                }
+                amount
+                currencyCode
               }
             }
           }
         }
       }
     }
-  `;
+  }
+}
+    }
+`;
   const queries = normalizeQueryList(searchQuery);
 
   let data = null;
@@ -199,86 +213,84 @@ export async function getCollectionProductsWithFilters(
 ) {
   const query = `
     query getCollectionProducts($handle: String!, $first: Int!, $filters: [ProductFilter!], $sortKey: ProductCollectionSortKeys, $reverse: Boolean) {
-      collection(handle: $handle) {
-        id
-        handle
-        title
-        products(first: $first, filters: $filters, sortKey: $sortKey, reverse: $reverse) {
+  collection(handle: $handle) {
+    id
+    handle
+    title
+    products(first: $first, filters: $filters, sortKey: $sortKey, reverse: $reverse) {
           filters {
-            id
-            label
-            type
+        id
+        label
+        type
             values {
-              id
-              label
-              count
-              input
-            }
-          }
+          id
+          label
+          count
+          input
+        }
+      }
           edges {
             node {
-              id
-              handle
-              title
-              availableForSale
-              tags
-              images(first: 1) {
+          id
+          handle
+          title
+          availableForSale
+          tags
+          images(first: 1) {
                 edges {
                   node {
-                    altText
-                    url_240: url(
-                      transform: {
-                        maxWidth: 240
+                altText
+                url_240: url(
+                  transform: {
+                  maxWidth: 240
                         maxHeight: 360
                         preferredContentType: WEBP
-                      }
-                    )
-                    url_360: url(
-                      transform: {
-                        maxWidth: 360
+                }
+                )
+                url_360: url(
+                  transform: {
+                  maxWidth: 360
                         maxHeight: 540
                         preferredContentType: WEBP
-                      }
-                    )
-                    url_480: url(
-                      transform: {
-                        maxWidth: 480
+                }
+                )
+                url_480: url(
+                  transform: {
+                  maxWidth: 480
                         maxHeight: 720
                         preferredContentType: WEBP
-                      }
-                    )
-                    url: url(
-                      transform: {
-                        maxWidth: 600
+                }
+                )
+                url: url(
+                  transform: {
+                  maxWidth: 600
                         maxHeight: 900
                         preferredContentType: WEBP
-                      }
-                    )
-                  }
                 }
+                )
               }
+            }
+          }
               options {
-                name
-                values
-              }
-              variants(first: 10) {
+            name
+            values
+          }
+          variants(first: 10) {
                 edges {
                   node {
-                    id
-                    availableForSale
+                id
+                availableForSale
                     selectedOptions {
-                      name
-                      value
-                    }
+                  name
+                  value
+                }
                     price {
-                      amount
-                      currencyCode
-                    }
+                  amount
+                  currencyCode
+                }
                     compareAtPrice {
-                      amount
-                      currencyCode
-                    }
-                  }
+                  amount
+                  currencyCode
                 }
               }
             }
@@ -286,7 +298,9 @@ export async function getCollectionProductsWithFilters(
         }
       }
     }
-  `;
+  }
+}
+`;
 
   const variables = {
     handle,
@@ -309,23 +323,23 @@ export async function getCollectionProductsWithFilters(
 export async function getCollectionProductFilters(handle) {
   const query = `
     query getCollectionFilters($handle: String!, $first: Int!) {
-      collection(handle: $handle) {
-        products(first: $first) {
+  collection(handle: $handle) {
+    products(first: $first) {
           filters {
-            id
-            label
-            type
+        id
+        label
+        type
             values {
-              id
-              label
-              count
-              input
-            }
-          }
+          id
+          label
+          count
+          input
         }
       }
     }
-  `;
+  }
+}
+`;
   const variables = { handle, first: 1 };
   const data = await shopifyFetch(query, variables);
   return data?.collection?.products?.filters || [];
@@ -334,17 +348,17 @@ export async function getCollectionProductFilters(handle) {
 export async function getCollections(limit = 20) {
   const query = `
     query getCollections($first: Int!) {
-      collections(first: $first, sortKey: TITLE) {
+  collections(first: $first, sortKey: TITLE) {
         edges {
           node {
-            id
-            handle
-            title
-          }
-        }
+        id
+        handle
+        title
       }
     }
-  `;
+  }
+}
+`;
   const variables = { first: limit };
   const data = await shopifyFetch(query, variables);
   return (data?.collections?.edges || []).map((edge) => edge.node);
@@ -353,13 +367,13 @@ export async function getCollections(limit = 20) {
 export async function getCollectionByHandle(handle) {
   const query = `
     query getCollectionByHandle($handle: String!) {
-      collection(handle: $handle) {
-        id
-        handle
-        title
-      }
-    }
-  `;
+  collection(handle: $handle) {
+    id
+    handle
+    title
+  }
+}
+`;
   const data = await shopifyFetch(query, { handle });
   return data?.collection || null;
 }
@@ -367,21 +381,21 @@ export async function getCollectionByHandle(handle) {
 export async function getSearchProductFilters(searchQuery = "*") {
   const query = `
     query getSearchFilters($first: Int!, $query: String!) {
-      search(query: $query, first: $first, types: PRODUCT) {
+  search(query: $query, first: $first, types: PRODUCT) {
         productFilters {
-          id
-          label
-          type
+      id
+      label
+      type
           values {
-            id
-            label
-            count
-            input
-          }
-        }
+        id
+        label
+        count
+        input
       }
     }
-  `;
+  }
+}
+`;
   const queries = normalizeQueryList(searchQuery);
   let lastFilters = [];
 
@@ -402,84 +416,84 @@ export async function getSearchProductFilters(searchQuery = "*") {
 export async function getAllProducts(limit = 20) {
   const query = `
     query getAllProducts($first: Int!) {
-      products(first: $first) {
+  products(first: $first) {
         edges {
           node {
-            id 
-            handle 
-            title 
-            availableForSale
-            tags
-            fabricMetafield: metafield(namespace: "custom", key: "fabric") {
-              value
-            }
-            colorMetafield: metafield(namespace: "custom", key: "color") {
-              value
-            }
-            images(first:1){
+        id
+        handle
+        title
+        availableForSale
+        tags
+        fabricMetafield: metafield(namespace: "custom", key: "fabric") {
+          value
+        }
+        colorMetafield: metafield(namespace: "custom", key: "color") {
+          value
+        }
+        images(first: 1){
               edges{
                 node{
-                  altText 
-                  url_240: url(
-                    transform: {
-                      maxWidth: 240
+              altText
+              url_240: url(
+                transform: {
+                maxWidth: 240
                       maxHeight: 360
                       preferredContentType: WEBP
-                    }
-                  )
-                  url_360: url(
-                    transform: {
-                      maxWidth: 360
+              }
+              )
+              url_360: url(
+                transform: {
+                maxWidth: 360
                       maxHeight: 540
                       preferredContentType: WEBP
-                    }
-                  )
-                  url_480: url(
-                    transform: {
-                      maxWidth: 480
+              }
+              )
+              url_480: url(
+                transform: {
+                maxWidth: 480
                       maxHeight: 720
                       preferredContentType: WEBP
-                    }
-                  )
-                  url: url(
-                    transform: {
-                      maxWidth: 600
+              }
+              )
+              url: url(
+                transform: {
+                maxWidth: 600
                       maxHeight: 900
                       preferredContentType: WEBP
-                    }
-                  )
-                }
               }
+              )
             }
+          }
+        }
             options {
-              name
-              values
-            }
-            variants(first: 10) {
+          name
+          values
+        }
+        variants(first: 10) {
               edges {
                 node {
-                  id
-                  availableForSale
+              id
+              availableForSale
                   selectedOptions {
-                    name
-                    value
-                  }
+                name
+                value
+              }
                   price {
-                    amount
-                    currencyCode
-                  }
+                amount
+                currencyCode
+              }
                   compareAtPrice {
-                    amount
-                    currencyCode
-                  }
-                }
+                amount
+                currencyCode
               }
             }
           }
         }
       }
     }
-  `;
+  }
+}
+`;
   const variables = { first: limit };
   const data = await shopifyFetch(query, variables);
   return (data?.products?.edges || []).map((edge) => edge.node);
@@ -488,118 +502,118 @@ export async function getAllProducts(limit = 20) {
 export async function getProduct(handle) {
   const query = `
     query getProduct($handle: String!) {
-      product(handle: $handle) {
-        id
-        handle 
-        title
-        description
-        descriptionHtml
-        tags 
-        availableForSale
-        fabricMetafield: metafield(namespace: "custom", key: "fabric") {
-          value
-        }
-        colorPattern: metafield(namespace: "custom", key: "color-pattern") {
-          value
-        }
-        colorMetafield: metafield(namespace: "custom", key: "color") {
-          value
-        }
-        colorMetafieldAlt: metafield(namespace: "custom", key: "colour") {
-          value
-        }
-        colorMetafieldGlobal: metafield(namespace: "global", key: "color") {
-          value
-        }
-        images(first: 10) {
+  product(handle: $handle) {
+    id
+    handle
+    title
+    description
+    descriptionHtml
+    tags
+    availableForSale
+    fabricMetafield: metafield(namespace: "custom", key: "fabric") {
+      value
+    }
+    colorPattern: metafield(namespace: "custom", key: "color-pattern") {
+      value
+    }
+    colorMetafield: metafield(namespace: "custom", key: "color") {
+      value
+    }
+    colorMetafieldAlt: metafield(namespace: "custom", key: "colour") {
+      value
+    }
+    colorMetafieldGlobal: metafield(namespace: "global", key: "color") {
+      value
+    }
+    images(first: 10) {
           edges {
             node {
-              url_240: url(
-                transform: {
-                  maxWidth: 240
+          url_240: url(
+            transform: {
+            maxWidth: 240
                   maxHeight: 320
                   preferredContentType: WEBP
-                }
-              )
-              url_360: url(
-                transform: {
-                  maxWidth: 360
+          }
+          )
+          url_360: url(
+            transform: {
+            maxWidth: 360
                   maxHeight: 480
                   preferredContentType: WEBP
-                }
-              )
-              url_480: url(
-                transform: {
-                  maxWidth: 480
+          }
+          )
+          url_480: url(
+            transform: {
+            maxWidth: 480
                   maxHeight: 640
                   preferredContentType: WEBP
-                }
-              )
-              url_600: url(
-                transform: {
-                  maxWidth: 600
+          }
+          )
+          url_600: url(
+            transform: {
+            maxWidth: 600
                   maxHeight: 800
                   preferredContentType: WEBP
-                }
-              )
-              url_900: url(
-                transform: {
-                  maxWidth: 900
+          }
+          )
+          url_900: url(
+            transform: {
+            maxWidth: 900
                   maxHeight: 1200
                   preferredContentType: WEBP
-                }
-              )
-              url_1200: url(
-                transform: {
-                  maxWidth: 1200
+          }
+          )
+          url_1200: url(
+            transform: {
+            maxWidth: 1200
                   maxHeight: 1600
                   preferredContentType: WEBP
-                }
-              )
-              url_1600: url(
-                transform: {
-                  maxWidth: 1600
+          }
+          )
+          url_1600: url(
+            transform: {
+            maxWidth: 1600
                   maxHeight: 2134
                   preferredContentType: WEBP
-                }
-              )
-              url: url(
-                transform: {
-                  maxWidth: 1200
+          }
+          )
+          url: url(
+            transform: {
+            maxWidth: 1200
                   maxHeight: 1600
                   preferredContentType: WEBP
-                }
-              )
-              altText
-            }
           }
+          )
+          altText
         }
-        variants(first: 10) {
+      }
+    }
+    variants(first: 10) {
           edges {
             node {
-              id 
-              title 
-              sku
-              availableForSale
-              quantityAvailable
+          id
+          title
+          sku
+          availableForSale
+          quantityAvailable
               price {
-                amount 
-                currencyCode
-              }
+            amount
+            currencyCode
+          }
               compareAtPrice {
-                amount
-                currencyCode
-              }
+            amount
+            currencyCode
+          }
               selectedOptions {
-                name 
-                value
-              }
-            }
+            name
+            value
           }
         }
       }
     }
-  `;
+  }
+}
+`;
   const data = await shopifyFetch(query, { handle });
   return data?.product || null;
 }
@@ -624,146 +638,146 @@ const normalizeReelNode = (node) => {
 export async function getShoppableReels(limit = 20) {
   const query = `
     query getShoppableReels($first: Int!) {
-      metaobjects(type: "shoppable_reel", first: $first) {
+  metaobjects(type: "shoppable_reel", first: $first) {
         edges {
           node {
-            id
-            handle
+        id
+        handle
             fields {
-              key
-              value
+          key
+          value
               reference {
                 ... on MediaImage {
                   image {
-                    url_240: url(
-                      transform: {
-                        maxWidth: 240
+                url_240: url(
+                  transform: {
+                  maxWidth: 240
                         maxHeight: 400
                         preferredContentType: WEBP
-                      }
-                    )
-                    url_360: url(
-                      transform: {
-                        maxWidth: 360
+                }
+                )
+                url_360: url(
+                  transform: {
+                  maxWidth: 360
                         maxHeight: 600
                         preferredContentType: WEBP
-                      }
-                    )
-                    url_480: url(
-                      transform: {
-                        maxWidth: 480
+                }
+                )
+                url_480: url(
+                  transform: {
+                  maxWidth: 480
                         maxHeight: 800
                         preferredContentType: WEBP
-                      }
-                    )
-                    url: url(
-                      transform: {
-                        maxWidth: 600
+                }
+                )
+                url: url(
+                  transform: {
+                  maxWidth: 600
                         maxHeight: 1000
                         preferredContentType: WEBP
-                      }
-                    )
-                    altText
-                  }
                 }
+                )
+                altText
+              }
+            }
                 ... on Video {
                   sources {
-                    url
-                    mimeType
-                  }
+                url
+                mimeType
+              }
                   previewImage {
-                    url_240: url(
-                      transform: {
-                        maxWidth: 240
+                url_240: url(
+                  transform: {
+                  maxWidth: 240
                         maxHeight: 400
                         preferredContentType: WEBP
-                      }
-                    )
-                    url_360: url(
-                      transform: {
-                        maxWidth: 360
+                }
+                )
+                url_360: url(
+                  transform: {
+                  maxWidth: 360
                         maxHeight: 600
                         preferredContentType: WEBP
-                      }
-                    )
-                    url_480: url(
-                      transform: {
-                        maxWidth: 480
+                }
+                )
+                url_480: url(
+                  transform: {
+                  maxWidth: 480
                         maxHeight: 800
                         preferredContentType: WEBP
-                      }
-                    )
-                    url: url(
-                      transform: {
-                        maxWidth: 600
+                }
+                )
+                url: url(
+                  transform: {
+                  maxWidth: 600
                         maxHeight: 1000
                         preferredContentType: WEBP
-                      }
-                    )
-                    altText
-                  }
                 }
+                )
+                altText
+              }
+            }
                 ... on Product {
-                  id
-                  title
-                  handle
-                  colorPattern: metafield(namespace: "custom", key: "color-pattern") {
-                    value
-                  }
-                  colorMetafield: metafield(namespace: "custom", key: "color") {
-                    value
-                  }
-                  colorMetafieldAlt: metafield(namespace: "custom", key: "colour") {
-                    value
-                  }
-                  colorMetafieldGlobal: metafield(namespace: "global", key: "color") {
-                    value
-                  }
+              id
+              title
+              handle
+              colorPattern: metafield(namespace: "custom", key: "color-pattern") {
+                value
+              }
+              colorMetafield: metafield(namespace: "custom", key: "color") {
+                value
+              }
+              colorMetafieldAlt: metafield(namespace: "custom", key: "colour") {
+                value
+              }
+              colorMetafieldGlobal: metafield(namespace: "global", key: "color") {
+                value
+              }
                   priceRange {
                     minVariantPrice {
-                      amount
-                      currencyCode
-                    }
-                  }
+                  amount
+                  currencyCode
+                }
+              }
                   featuredImage {
-                    url_60: url(
-                      transform: {
-                        maxWidth: 60
+                url_60: url(
+                  transform: {
+                  maxWidth: 60
                         maxHeight: 60
                         preferredContentType: WEBP
-                      }
-                    )
-                    url_80: url(
-                      transform: {
-                        maxWidth: 80
+                }
+                )
+                url_80: url(
+                  transform: {
+                  maxWidth: 80
                         maxHeight: 80
                         preferredContentType: WEBP
-                      }
-                    )
-                    url_120: url(
-                      transform: {
-                        maxWidth: 120
+                }
+                )
+                url_120: url(
+                  transform: {
+                  maxWidth: 120
                         maxHeight: 120
                         preferredContentType: WEBP
-                      }
-                    )
-                    url: url(
-                      transform: {
-                        maxWidth: 240
+                }
+                )
+                url: url(
+                  transform: {
+                  maxWidth: 240
                         maxHeight: 240
                         preferredContentType: WEBP
-                      }
-                    )
-                    altText
-                  }
                 }
+                )
+                altText
               }
             }
           }
         }
       }
     }
-  `;
+  }
+}
+`;
 
   const data = await shopifyFetch(query, { first: limit });
   const reels = (data?.metaobjects?.edges || [])
@@ -784,142 +798,140 @@ export async function getShoppableReels(limit = 20) {
 export async function getProductReels(handle, limit = 10) {
   const query = `
     query getProductReels($handle: String!, $first: Int!) {
-      product(handle: $handle) {
-        metafield(namespace: "custom", key: "reels") {
-          references(first: $first) {
+  product(handle: $handle) {
+    metafield(namespace: "custom", key: "reels") {
+      references(first: $first) {
             edges {
               node {
                 ... on Metaobject {
-                  id
-                  handle
+              id
+              handle
                   fields {
-                    key
-                    value
+                key
+                value
                     reference {
                       ... on MediaImage {
                         image {
-                          url_240: url(
-                            transform: {
-                              maxWidth: 240
+                      url_240: url(
+                        transform: {
+                        maxWidth: 240
                               maxHeight: 400
                               preferredContentType: WEBP
-                            }
-                          )
-                          url_360: url(
-                            transform: {
-                              maxWidth: 360
+                      }
+                      )
+                      url_360: url(
+                        transform: {
+                        maxWidth: 360
                               maxHeight: 600
                               preferredContentType: WEBP
-                            }
-                          )
-                          url_480: url(
-                            transform: {
-                              maxWidth: 480
+                      }
+                      )
+                      url_480: url(
+                        transform: {
+                        maxWidth: 480
                               maxHeight: 800
                               preferredContentType: WEBP
-                            }
-                          )
-                          url: url(
-                            transform: {
-                              maxWidth: 600
+                      }
+                      )
+                      url: url(
+                        transform: {
+                        maxWidth: 600
                               maxHeight: 1000
                               preferredContentType: WEBP
-                            }
-                          )
-                          altText
-                        }
                       }
+                      )
+                      altText
+                    }
+                  }
                       ... on Video {
                         sources {
-                          url
-                          mimeType
-                        }
+                      url
+                      mimeType
+                    }
                         previewImage {
-                          url_240: url(
-                            transform: {
-                              maxWidth: 240
+                      url_240: url(
+                        transform: {
+                        maxWidth: 240
                               maxHeight: 400
                               preferredContentType: WEBP
-                            }
-                          )
-                          url_360: url(
-                            transform: {
-                              maxWidth: 360
+                      }
+                      )
+                      url_360: url(
+                        transform: {
+                        maxWidth: 360
                               maxHeight: 600
                               preferredContentType: WEBP
-                            }
-                          )
-                          url_480: url(
-                            transform: {
-                              maxWidth: 480
+                      }
+                      )
+                      url_480: url(
+                        transform: {
+                        maxWidth: 480
                               maxHeight: 800
                               preferredContentType: WEBP
-                            }
-                          )
-                          url: url(
-                            transform: {
-                              maxWidth: 600
+                      }
+                      )
+                      url: url(
+                        transform: {
+                        maxWidth: 600
                               maxHeight: 1000
                               preferredContentType: WEBP
-                            }
-                          )
-                          altText
-                        }
                       }
+                      )
+                      altText
+                    }
+                  }
                       ... on Product {
-                        id
-                        title
-                        handle
-                        colorPattern: metafield(namespace: "custom", key: "color-pattern") {
-                          value
-                        }
-                        colorMetafield: metafield(namespace: "custom", key: "color") {
-                          value
-                        }
-                        colorMetafieldAlt: metafield(namespace: "custom", key: "colour") {
-                          value
-                        }
-                        colorMetafieldGlobal: metafield(namespace: "global", key: "color") {
-                          value
-                        }
+                    id
+                    title
+                    handle
+                    colorPattern: metafield(namespace: "custom", key: "color-pattern") {
+                      value
+                    }
+                    colorMetafield: metafield(namespace: "custom", key: "color") {
+                      value
+                    }
+                    colorMetafieldAlt: metafield(namespace: "custom", key: "colour") {
+                      value
+                    }
+                    colorMetafieldGlobal: metafield(namespace: "global", key: "color") {
+                      value
+                    }
                         priceRange {
                           minVariantPrice {
-                            amount
-                            currencyCode
-                          }
-                        }
+                        amount
+                        currencyCode
+                      }
+                    }
                         featuredImage {
-                          url_60: url(
-                            transform: {
-                              maxWidth: 60
+                      url_60: url(
+                        transform: {
+                        maxWidth: 60
                               maxHeight: 60
                               preferredContentType: WEBP
-                            }
-                          )
-                          url_80: url(
-                            transform: {
-                              maxWidth: 80
+                      }
+                      )
+                      url_80: url(
+                        transform: {
+                        maxWidth: 80
                               maxHeight: 80
                               preferredContentType: WEBP
-                            }
-                          )
-                          url_120: url(
-                            transform: {
-                              maxWidth: 120
+                      }
+                      )
+                      url_120: url(
+                        transform: {
+                        maxWidth: 120
                               maxHeight: 120
                               preferredContentType: WEBP
-                            }
-                          )
-                          url: url(
-                            transform: {
-                              maxWidth: 240
+                      }
+                      )
+                      url: url(
+                        transform: {
+                        maxWidth: 240
                               maxHeight: 240
                               preferredContentType: WEBP
-                            }
-                          )
-                          altText
-                        }
                       }
+                      )
+                      altText
                     }
                   }
                 }
@@ -929,7 +941,9 @@ export async function getProductReels(handle, limit = 10) {
         }
       }
     }
-  `;
+  }
+}
+`;
 
   const data = await shopifyFetch(query, { handle, first: limit });
   const edges = data?.product?.metafield?.references?.edges || [];
