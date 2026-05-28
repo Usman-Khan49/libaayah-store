@@ -12,8 +12,6 @@ export default function ReelsSection() {
   const [reels, setReels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [failedVideoIds, setFailedVideoIds] = useState(() => new Set());
-  const videoRefs = useRef([]);
   const modalVideoRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -46,41 +44,6 @@ export default function ReelsSection() {
       cancelled = true;
     };
   }, []);
-
-  useEffect(() => {
-    setFailedVideoIds(new Set());
-  }, [reels]);
-
-  // Play/pause reels based on visibility to avoid loading all videos at once
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return undefined;
-
-    const cards = Array.from(container.querySelectorAll(".reel-card"));
-    if (cards.length === 0) return undefined;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          const video = entry.target.querySelector("video");
-          if (!video) return;
-
-          if (entry.isIntersecting) {
-            video.play().catch((error) => {
-              console.log("Video autoplay prevented:", error);
-            });
-          } else {
-            video.pause();
-          }
-        });
-      },
-      { root: container, threshold: 0.6 },
-    );
-
-    cards.forEach((card) => observer.observe(card));
-
-    return () => observer.disconnect();
-  }, [reels]);
 
   // Handle scroll to update focused card on mobile
   useEffect(() => {
@@ -222,14 +185,6 @@ export default function ReelsSection() {
       .join(", ");
   };
 
-  const markVideoFailed = (reelId) => {
-    setFailedVideoIds((prev) => {
-      const next = new Set(prev);
-      next.add(reelId);
-      return next;
-    });
-  };
-
   const openReelModal = (index) => {
     setSelectedReel(index);
     setProgress(0);
@@ -263,10 +218,6 @@ export default function ReelsSection() {
     <section className="reels-section">
       <div className="reels-container" ref={containerRef}>
         {reels.map((reel, index) => {
-          const videoUrl = getReelVideoSource(reel);
-          const isVideoFailed = failedVideoIds.has(reel.id);
-          const shouldShowVideo = Boolean(videoUrl) && !isVideoFailed;
-
           const colorValue = getReelColor(reel);
           const productImage = getReelProductImage(reel);
           const productTitle = reel?.product?.title || getReelLabel(reel);
@@ -283,23 +234,7 @@ export default function ReelsSection() {
             onClick={(e) => handleVideoClick(e, index)}
           >
             <div className="reel-video-wrapper">
-              {shouldShowVideo ? (
-                <video
-                  ref={(el) => (videoRefs.current[index] = el)}
-                  className="reel-video"
-                  src={videoUrl}
-                  poster={posterUrl}
-                  muted
-                  loop
-                  playsInline
-                  preload="none"
-                  onError={(e) => {
-                    console.log("Video failed to load:", videoUrl);
-                    markVideoFailed(reel.id);
-                  }}
-                />
-              ) : null}
-              {!shouldShowVideo && posterUrl ? (
+              {posterUrl ? (
                 <img
                   src={posterUrl}
                   srcSet={posterSrcSet || undefined}

@@ -140,7 +140,6 @@ export default function ProductPage() {
   const [selectedReelIndex, setSelectedReelIndex] = useState(null);
   const [reelMuted, setReelMuted] = useState(true);
   const [reelProgress, setReelProgress] = useState(0);
-  const previewVideoRef = useRef(null);
   const modalVideoRef = useRef(null);
 
   useEffect(() => {
@@ -455,13 +454,6 @@ export default function ProductPage() {
   };
 
   useEffect(() => {
-    if (!previewVideoRef.current) return;
-    previewVideoRef.current.play().catch((err) => {
-      console.log("Preview autoplay blocked:", err);
-    });
-  }, [productReels]);
-
-  useEffect(() => {
     const video = modalVideoRef.current;
     if (!video) return;
 
@@ -559,7 +551,6 @@ export default function ProductPage() {
   const inWishlist = isInWishlist(product.id);
   const descriptionHtml = product.descriptionHtml || "";
   const previewReel = productReels[0] || null;
-  const previewVideo = getReelVideoSource(previewReel);
   const previewPosterImage = getReelPosterImage(previewReel);
   const previewPoster = getReelPosterUrl(previewPosterImage);
   const previewPosterSrcSet = getReelPosterSrcSet(previewPosterImage);
@@ -803,30 +794,16 @@ export default function ProductPage() {
           aria-label="Watch product reel"
         >
           <div className="pdp-reel-video-wrapper">
-            {previewVideo ? (
-              <video
-                ref={previewVideoRef}
+            {previewPoster && (
+              <img
+                src={previewPoster}
+                srcSet={previewPosterSrcSet || undefined}
+                sizes="(max-width: 768px) 110px, 130px"
+                alt={previewReel?.title || "Product reel"}
                 className="pdp-reel-video"
-                src={previewVideo}
-                poster={previewPoster}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
+                loading="lazy"
+                decoding="async"
               />
-            ) : (
-              previewPoster && (
-                <img
-                  src={previewPoster}
-                  srcSet={previewPosterSrcSet || undefined}
-                  sizes="(max-width: 768px) 110px, 130px"
-                  alt={previewReel?.title || "Product reel"}
-                  className="pdp-reel-video"
-                  loading="lazy"
-                  decoding="async"
-                />
-              )
             )}
             <span className="pdp-reel-play" aria-hidden="true">
               <svg
