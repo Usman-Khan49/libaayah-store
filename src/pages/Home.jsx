@@ -177,7 +177,7 @@ export default function HomePage() {
 
             const result = await getCollectionProductsWithFilters(
               collection.handle,
-              16,
+              8,
             );
             return [collection.key, result.products || []];
           }),

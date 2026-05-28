@@ -12,6 +12,7 @@ export default function ReelsSection() {
   const [reels, setReels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [failedVideoIds, setFailedVideoIds] = useState(() => new Set());
   const videoRefs = useRef([]);
   const modalVideoRef = useRef(null);
   const containerRef = useRef(null);
@@ -45,6 +46,10 @@ export default function ReelsSection() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    setFailedVideoIds(new Set());
+  }, [reels]);
 
   // Play/pause reels based on visibility to avoid loading all videos at once
   useEffect(() => {
@@ -217,6 +222,14 @@ export default function ReelsSection() {
       .join(", ");
   };
 
+  const markVideoFailed = (reelId) => {
+    setFailedVideoIds((prev) => {
+      const next = new Set(prev);
+      next.add(reelId);
+      return next;
+    });
+  };
+
   const openReelModal = (index) => {
     setSelectedReel(index);
     setProgress(0);
@@ -251,6 +264,8 @@ export default function ReelsSection() {
       <div className="reels-container" ref={containerRef}>
         {reels.map((reel, index) => {
           const videoUrl = getReelVideoSource(reel);
+          const isVideoFailed = failedVideoIds.has(reel.id);
+          const shouldShowVideo = Boolean(videoUrl) && !isVideoFailed;
 
           const colorValue = getReelColor(reel);
           const productImage = getReelProductImage(reel);
@@ -268,7 +283,7 @@ export default function ReelsSection() {
             onClick={(e) => handleVideoClick(e, index)}
           >
             <div className="reel-video-wrapper">
-              {videoUrl ? (
+              {shouldShowVideo ? (
                 <video
                   ref={(el) => (videoRefs.current[index] = el)}
                   className="reel-video"
@@ -278,21 +293,13 @@ export default function ReelsSection() {
                   loop
                   playsInline
                   preload="none"
-                  onLoadedData={(e) => {
-                    e.target.play().catch((err) => {
-                      console.log("Autoplay blocked:", err);
-                    });
-                  }}
                   onError={(e) => {
                     console.log("Video failed to load:", videoUrl);
-                    e.target.style.display = "none";
-                    if (e.target.nextSibling) {
-                      e.target.nextSibling.style.display = "block";
-                    }
+                    markVideoFailed(reel.id);
                   }}
                 />
               ) : null}
-              {posterUrl ? (
+              {!shouldShowVideo && posterUrl ? (
                 <img
                   src={posterUrl}
                   srcSet={posterSrcSet || undefined}

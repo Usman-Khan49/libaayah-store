@@ -514,6 +514,27 @@ export async function getProduct(handle) {
         images(first: 10) {
           edges {
             node {
+              url_240: url(
+                transform: {
+                  maxWidth: 240
+                  maxHeight: 320
+                  preferredContentType: WEBP
+                }
+              )
+              url_360: url(
+                transform: {
+                  maxWidth: 360
+                  maxHeight: 480
+                  preferredContentType: WEBP
+                }
+              )
+              url_480: url(
+                transform: {
+                  maxWidth: 480
+                  maxHeight: 640
+                  preferredContentType: WEBP
+                }
+              )
               url_600: url(
                 transform: {
                   maxWidth: 600

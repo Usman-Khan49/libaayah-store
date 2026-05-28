@@ -99,6 +99,9 @@ const getGalleryImageSrc = (image) => {
 
 const getGalleryImageSrcSet = (image) => {
   return [
+    image?.url_240 && `${image.url_240} 240w`,
+    image?.url_360 && `${image.url_360} 360w`,
+    image?.url_480 && `${image.url_480} 480w`,
     image?.url_600 && `${image.url_600} 600w`,
     image?.url_900 && `${image.url_900} 900w`,
     image?.url_1200 && `${image.url_1200} 1200w`,
@@ -145,21 +148,33 @@ export default function ProductPage() {
       try {
         setError(false);
         setLoading(true);
-        const productData = await getProduct(handle);
-        const allProducts = await getAllProducts(8);
+        const productPromise = getProduct(handle);
+        const relatedPromise = getAllProducts(8).catch((err) => {
+          console.error("Error fetching related products:", err);
+          return null;
+        });
+        const productData = await productPromise;
 
-        if (productData) {
-          setProduct(productData);
+        if (!productData) {
+          throw new Error("Product not found");
+        }
+
+        setProduct(productData);
+        setLoading(false);
+
+        const allProducts = await relatedPromise;
+        if (allProducts) {
           setRelatedProducts(
             allProducts.filter((p) => p.id !== productData.id).slice(0, 4),
           );
+        } else {
+          setRelatedProducts([]);
         }
       } catch (err) {
         console.error("Error fetching product:", err);
         setError(true);
         setProduct(null);
         setRelatedProducts([]);
-      } finally {
         setLoading(false);
       }
     };
@@ -600,6 +615,9 @@ export default function ProductPage() {
               srcSet={mainImageSrcSet || undefined}
               sizes="100vw"
               alt={product.title}
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
             />
           </div>
 
@@ -630,6 +648,8 @@ export default function ProductPage() {
                     srcSet={imageSrcSet || undefined}
                     sizes={imageSizes}
                     alt={`${product.title} - Image ${index + 1}`}
+                    loading={index === 0 ? "eager" : "lazy"}
+                    decoding="async"
                   />
                 </div>
               );
@@ -793,12 +813,7 @@ export default function ProductPage() {
                 muted
                 loop
                 playsInline
-                preload="auto"
-                onLoadedData={(e) => {
-                  e.target.play().catch((err) => {
-                    console.log("Preview autoplay blocked:", err);
-                  });
-                }}
+                preload="metadata"
               />
             ) : (
               previewPoster && (
