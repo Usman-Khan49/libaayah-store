@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { buildCdnSrcSet, buildCdnUrl, CDN_ASSETS } from "../../utils";
 import "../../styles/components/Footer.css";
-import instagram from "../../assets/instagram.png";
-import facebook from "../../assets/facebook.png";
+
+const SOCIAL_WIDTHS = [24, 48];
 
 export default function Footer() {
   const [newsletterEmail, setNewsletterEmail] = useState("");
@@ -187,7 +188,9 @@ export default function Footer() {
                 rel="noopener noreferrer"
               >
                 <img
-                  src={instagram}
+                  src={buildCdnUrl(CDN_ASSETS.instagram, { width: 24 })}
+                  srcSet={buildCdnSrcSet(CDN_ASSETS.instagram, SOCIAL_WIDTHS)}
+                  sizes="24px"
                   alt="Instagram"
                   className="social-icon"
                   loading="lazy"
@@ -200,7 +203,9 @@ export default function Footer() {
                 rel="noopener noreferrer"
               >
                 <img
-                  src={facebook}
+                  src={buildCdnUrl(CDN_ASSETS.facebook, { width: 24 })}
+                  srcSet={buildCdnSrcSet(CDN_ASSETS.facebook, SOCIAL_WIDTHS)}
+                  sizes="24px"
                   alt="Facebook"
                   className="social-icon"
                   loading="lazy"

@@ -1,9 +1,9 @@
 import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
+import { buildCdnSrcSet, buildCdnUrl, CDN_ASSETS } from "../../utils";
 import "../../styles/components/UtilitiesSection.css";
-import trackingIcon from "../../assets/tracking.png";
-import supportIcon from "../../assets/support.png";
-import moneyIcon from "../../assets/money.png";
+
+const UTILITY_ICON_WIDTHS = [48, 96];
 
 export default function UtilitiesSection() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -31,7 +31,7 @@ export default function UtilitiesSection() {
   const utilities = [
     {
       id: 1,
-      icon: trackingIcon,
+      icon: CDN_ASSETS.tracking,
       title: "Track your order",
       description: "Click here for quick update",
       isLink: true,
@@ -39,14 +39,14 @@ export default function UtilitiesSection() {
     },
     {
       id: 2,
-      icon: supportIcon,
+      icon: CDN_ASSETS.support,
       title: "SUPPORT 24/7",
       description: "Contact us 24 hours a day, 7 days a week",
       isLink: false,
     },
     {
       id: 3,
-      icon: moneyIcon,
+      icon: CDN_ASSETS.money,
       title: "Payment Methods",
       description: "COD, Credit Card: Visa, MasterCard, easypaisa, jazzcash",
       isLink: false,
@@ -65,7 +65,9 @@ export default function UtilitiesSection() {
           const content = (
             <>
               <img
-                src={utility.icon}
+                src={buildCdnUrl(utility.icon, { width: 48 })}
+                srcSet={buildCdnSrcSet(utility.icon, UTILITY_ICON_WIDTHS)}
+                sizes="48px"
                 alt={utility.title}
                 className="utility-icon"
               />

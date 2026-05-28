@@ -9,12 +9,7 @@ import ReelsSection from "../components/layout/ReelsSection";
 import ProductCard from "../components/product/ProductCard";
 import ProductsCarousel from "../components/layout/ProductsCarousel";
 import UtilitiesSection from "../components/layout/UtilitiesSection";
-import bottomBannerImg from "../assets/bottom_banner.png";
-import bannerImageOne from "../assets/Banner_image_1.png";
-import bannerImageTwo from "../assets/Banner_image_2.png";
-import unstitchedImg from "../assets/img36.jpg";
-import winterImg from "../assets/img88.jpg";
-import summerImg from "../assets/img109.jpg";
+import { buildCdnSrcSet, buildCdnUrl, CDN_ASSETS } from "../utils";
 import "../styles/pages/HomePage.css";
 
 const popularCollections = [
@@ -32,33 +27,41 @@ const shopCategories = [
   {
     key: "unstitched",
     label: "Unstitched",
-    image: unstitchedImg,
+    image: CDN_ASSETS.img36,
     alt: "Unstitched Collection",
   },
   {
     key: "winter",
     label: "Winter",
-    image: winterImg,
+    image: CDN_ASSETS.img88,
     alt: "Winter Collection",
   },
   {
     key: "summer",
     label: "Summer",
-    image: summerImg,
+    image: CDN_ASSETS.img109,
     alt: "Summer Collection",
   },
 ];
 
 const heroBanners = [
   {
-    src: bannerImageOne,
+    src: CDN_ASSETS.banner1,
     alt: "Libaayah banner 1",
   },
   {
-    src: bannerImageTwo,
+    src: CDN_ASSETS.banner2,
     alt: "Libaayah banner 2",
   },
 ];
+
+const HERO_WIDTHS = [640, 960, 1280, 1600, 1920];
+const HERO_SIZES = "100vw";
+const CATEGORY_WIDTHS = [480, 640, 960, 1200];
+const CATEGORY_SIZES =
+  "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw";
+const SHOWCASE_WIDTHS = [640, 960, 1280, 1600];
+const SHOWCASE_SIZES = "(max-width: 768px) 100vw, 55vw";
 
 const normalizeValue = (value) =>
   value
@@ -241,12 +244,22 @@ export default function HomePage() {
         >
           {heroBanners.map((banner, index) => (
             <div className="hero-slide" key={banner.src}>
-              <img
-                src={banner.src}
-                alt={banner.alt}
-                loading={index === 0 ? "eager" : "lazy"}
-                decoding="async"
-              />
+              <picture>
+                <source
+                  type="image/webp"
+                  srcSet={buildCdnSrcSet(banner.src, HERO_WIDTHS, "webp")}
+                  sizes={HERO_SIZES}
+                />
+                <img
+                  src={buildCdnUrl(banner.src, { width: 1280 })}
+                  srcSet={buildCdnSrcSet(banner.src, HERO_WIDTHS)}
+                  sizes={HERO_SIZES}
+                  alt={banner.alt}
+                  loading={index === 0 ? "eager" : "lazy"}
+                  decoding="async"
+                  fetchPriority={index === 0 ? "high" : "auto"}
+                />
+              </picture>
             </div>
           ))}
         </div>
@@ -320,13 +333,22 @@ export default function HomePage() {
               to={category.link}
               className="category-box"
             >
-              <img
-                src={category.image}
-                alt={category.alt}
-                className="category-image"
-                loading="lazy"
-                decoding="async"
-              />
+              <picture>
+                <source
+                  type="image/webp"
+                  srcSet={buildCdnSrcSet(category.image, CATEGORY_WIDTHS, "webp")}
+                  sizes={CATEGORY_SIZES}
+                />
+                <img
+                  src={buildCdnUrl(category.image, { width: 960 })}
+                  srcSet={buildCdnSrcSet(category.image, CATEGORY_WIDTHS)}
+                  sizes={CATEGORY_SIZES}
+                  alt={category.alt}
+                  className="category-image"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </picture>
               <div className="category-overlay">
                 <h2 className="category-title">{category.label}</h2>
                 <p className="category-shop-now">Shop Now</p>
@@ -339,13 +361,26 @@ export default function HomePage() {
       {/* Showcase Banner + CTA Section */}
       <section className="showcase-section">
         <div className="showcase-video-wrapper">
-          <img
-            className="showcase-image"
-            src={bottomBannerImg}
-            alt="Libaayah showcase banner"
-            loading="lazy"
-            decoding="async"
-          />
+          <picture>
+            <source
+              type="image/webp"
+              srcSet={buildCdnSrcSet(
+                CDN_ASSETS.bottomBanner,
+                SHOWCASE_WIDTHS,
+                "webp",
+              )}
+              sizes={SHOWCASE_SIZES}
+            />
+            <img
+              className="showcase-image"
+              src={buildCdnUrl(CDN_ASSETS.bottomBanner, { width: 1280 })}
+              srcSet={buildCdnSrcSet(CDN_ASSETS.bottomBanner, SHOWCASE_WIDTHS)}
+              sizes={SHOWCASE_SIZES}
+              alt="Libaayah showcase banner"
+              loading="lazy"
+              decoding="async"
+            />
+          </picture>
         </div>
         <div className="showcase-text">
           <h2 className="showcase-heading">Crafted with Passion</h2>

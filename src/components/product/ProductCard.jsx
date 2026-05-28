@@ -2,10 +2,10 @@ import { Link, useLocation } from "react-router-dom";
 import { useWishlist } from "../../context/WishlistContext";
 import { useCart } from "../../hooks/useCart";
 import { useState } from "react";
-import { formatPrice } from "../../utils";
+import { formatPrice, buildCdnSrcSet, buildCdnUrl, CDN_ASSETS } from "../../utils";
 import "../../styles/components/ProductCard.css";
-import heartIcon from "../../assets/heart.png";
-import heartEnabledIcon from "../../assets/heartEnabled.png";
+
+const HEART_WIDTHS = [24, 48];
 
 export default function ProductCard({ product }) {
   const location = useLocation();
@@ -109,7 +109,15 @@ export default function ProductCard({ product }) {
           aria-label="Add to wishlist"
         >
           <img
-            src={inWishlist ? heartEnabledIcon : heartIcon}
+            src={buildCdnUrl(
+              inWishlist ? CDN_ASSETS.heartEnabled : CDN_ASSETS.heart,
+              { width: 24 },
+            )}
+            srcSet={buildCdnSrcSet(
+              inWishlist ? CDN_ASSETS.heartEnabled : CDN_ASSETS.heart,
+              HEART_WIDTHS,
+            )}
+            sizes="24px"
             alt="Wishlist"
             loading="lazy"
             decoding="async"

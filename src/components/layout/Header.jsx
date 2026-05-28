@@ -10,12 +10,12 @@ import { useWishlist } from "../../context/WishlistContext";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../hooks/useCart";
 import CartDrawer from "../cart/CartDrawer";
+import { buildCdnSrcSet, buildCdnUrl, CDN_ASSETS } from "../../utils";
 import "../../styles/components/Header.css";
-import logoImg from "../../assets/logo.png";
-import collectionImg from "../../assets/img36.jpg";
-import userIcon from "../../assets/user.png";
-import heartIcon from "../../assets/heart.png";
-import cartIcon from "../../assets/cart.png";
+
+const LOGO_WIDTHS = [110, 220];
+const ICON_WIDTHS = [20, 40];
+const COLLECTION_WIDTHS = [240, 360, 480, 600];
 
 const parseFilterInput = (input) => {
   try {
@@ -181,7 +181,9 @@ export default function Header() {
                 {/* Column 1: Featured Image */}
                 <div className="mega-menu-image">
                   <img
-                    src={collectionImg}
+                    src={buildCdnUrl(CDN_ASSETS.img36, { width: 360 })}
+                    srcSet={buildCdnSrcSet(CDN_ASSETS.img36, COLLECTION_WIDTHS)}
+                    sizes="240px"
                     alt="Collection"
                     loading="lazy"
                     decoding="async"
@@ -242,7 +244,13 @@ export default function Header() {
         {/* Center Section - Logo Only */}
         <div className="header-center">
           <Link to="/" className="logo-link">
-            <img src={logoImg} alt="Libaayah" className="logo-img" />
+            <img
+              src={buildCdnUrl(CDN_ASSETS.logo, { width: 220 })}
+              srcSet={buildCdnSrcSet(CDN_ASSETS.logo, LOGO_WIDTHS)}
+              sizes="110px"
+              alt="Libaayah"
+              className="logo-img"
+            />
           </Link>
         </div>
 
@@ -253,11 +261,20 @@ export default function Header() {
             className="icon-btn"
             aria-label="User Profile"
           >
-            <img src={userIcon} alt="User" loading="lazy" decoding="async" />
+            <img
+              src={buildCdnUrl(CDN_ASSETS.user, { width: 20 })}
+              srcSet={buildCdnSrcSet(CDN_ASSETS.user, ICON_WIDTHS)}
+              sizes="20px"
+              alt="User"
+              loading="lazy"
+              decoding="async"
+            />
           </Link>
           <Link to="/wishlist" className="icon-btn" aria-label="Wishlist">
             <img
-              src={heartIcon}
+              src={buildCdnUrl(CDN_ASSETS.heart, { width: 20 })}
+              srcSet={buildCdnSrcSet(CDN_ASSETS.heart, ICON_WIDTHS)}
+              sizes="20px"
               alt="Wishlist"
               loading="lazy"
               decoding="async"
@@ -271,7 +288,14 @@ export default function Header() {
             aria-label="Shopping Bag"
             onClick={() => setCartOpen(true)}
           >
-            <img src={cartIcon} alt="Cart" loading="lazy" decoding="async" />
+            <img
+              src={buildCdnUrl(CDN_ASSETS.cart, { width: 20 })}
+              srcSet={buildCdnSrcSet(CDN_ASSETS.cart, ICON_WIDTHS)}
+              sizes="20px"
+              alt="Cart"
+              loading="lazy"
+              decoding="async"
+            />
             {cartCount > 0 && <span className="icon-badge">{cartCount}</span>}
           </button>
         </div>
@@ -397,7 +421,14 @@ export default function Header() {
               className="mobile-profile-btn"
               onClick={toggleMenu}
             >
-              <img src={userIcon} alt="User" loading="lazy" decoding="async" />
+              <img
+                src={buildCdnUrl(CDN_ASSETS.user, { width: 20 })}
+                srcSet={buildCdnSrcSet(CDN_ASSETS.user, ICON_WIDTHS)}
+                sizes="20px"
+                alt="User"
+                loading="lazy"
+                decoding="async"
+              />
               <span>{isAuthenticated ? "My Account" : "Sign In"}</span>
             </Link>
             <div className="mobile-nav-link nav-contact">

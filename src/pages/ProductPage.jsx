@@ -10,15 +10,14 @@ import {
 } from "../lib/shopify";
 import { useCart } from "../hooks/useCart";
 import { useWishlist } from "../context/WishlistContext";
-import { formatPrice } from "../utils";
+import { buildCdnSrcSet, buildCdnUrl, CDN_ASSETS, formatPrice } from "../utils";
 import Skeleton from "../components/Skeleton";
 import ProductCard from "../components/product/ProductCard";
 import { Footer } from "../components/layout";
 import "../styles/pages/ProductPage.css";
-import facebookIcon from "../assets/facebook.png";
-import instagramIcon from "../assets/instagram.png";
-import heartIcon from "../assets/heart.png";
-import heartEnabledIcon from "../assets/heartEnabled.png";
+
+const SOCIAL_WIDTHS = [24, 48];
+const HEART_WIDTHS = [24, 48];
 
 const toTitleCase = (value) =>
   value
@@ -705,7 +704,15 @@ export default function ProductPage() {
               onClick={handleWishlistToggle}
             >
               <img
-                src={inWishlist ? heartEnabledIcon : heartIcon}
+                src={buildCdnUrl(
+                  inWishlist ? CDN_ASSETS.heartEnabled : CDN_ASSETS.heart,
+                  { width: 24 },
+                )}
+                srcSet={buildCdnSrcSet(
+                  inWishlist ? CDN_ASSETS.heartEnabled : CDN_ASSETS.heart,
+                  HEART_WIDTHS,
+                )}
+                sizes="24px"
                 alt="Wishlist"
               />
             </button>
@@ -757,7 +764,12 @@ export default function ProductPage() {
                 rel="noopener noreferrer"
                 className="social-icon"
               >
-                <img src={facebookIcon} alt="Facebook" />
+                <img
+                  src={buildCdnUrl(CDN_ASSETS.facebook, { width: 24 })}
+                  srcSet={buildCdnSrcSet(CDN_ASSETS.facebook, SOCIAL_WIDTHS)}
+                  sizes="24px"
+                  alt="Facebook"
+                />
               </a>
               <a
                 href="https://instagram.com"
@@ -765,7 +777,12 @@ export default function ProductPage() {
                 rel="noopener noreferrer"
                 className="social-icon"
               >
-                <img src={instagramIcon} alt="Instagram" />
+                <img
+                  src={buildCdnUrl(CDN_ASSETS.instagram, { width: 24 })}
+                  srcSet={buildCdnSrcSet(CDN_ASSETS.instagram, SOCIAL_WIDTHS)}
+                  sizes="24px"
+                  alt="Instagram"
+                />
               </a>
             </div>
             <p className="disclaimer">
