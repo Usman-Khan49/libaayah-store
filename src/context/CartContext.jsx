@@ -11,7 +11,30 @@ import {
 // Create Cart Context
 export const CartContext = createContext(null);
 
-const CART_ID_KEY = "shopify_cart_id";
+const STORE_DOMAIN = import.meta.env.VITE_SHOPIFY_STORE_DOMAIN || "default";
+const CART_ID_KEY = `shopify_cart_id:${STORE_DOMAIN}`;
+const LEGACY_CART_ID_KEY = "shopify_cart_id";
+const CHECKOUT_DOMAIN_RAW = import.meta.env.VITE_SHOPIFY_CHECKOUT_DOMAIN || "";
+const CHECKOUT_DOMAIN = CHECKOUT_DOMAIN_RAW
+  ? new URL(
+      CHECKOUT_DOMAIN_RAW.includes("://")
+        ? CHECKOUT_DOMAIN_RAW
+        : `https://${CHECKOUT_DOMAIN_RAW}`,
+    ).host
+  : "";
+
+const normalizeCheckoutUrl = (checkoutUrl) => {
+  if (!checkoutUrl || !CHECKOUT_DOMAIN) return checkoutUrl;
+
+  try {
+    const next = new URL(checkoutUrl);
+    next.host = CHECKOUT_DOMAIN;
+    return next.toString();
+  } catch (error) {
+    console.warn("Failed to normalize checkout URL:", error);
+    return checkoutUrl;
+  }
+};
 
 // Cart Provider Component
 export const CartProvider = ({ children }) => {
@@ -55,6 +78,11 @@ export const CartProvider = ({ children }) => {
     if (storedCartId) {
       setCartId(storedCartId);
       loadCart(storedCartId);
+      return;
+    }
+
+    if (localStorage.getItem(LEGACY_CART_ID_KEY)) {
+      localStorage.removeItem(LEGACY_CART_ID_KEY);
     }
   }, [loadCart]);
 
@@ -176,8 +204,9 @@ export const CartProvider = ({ children }) => {
 
   // Proceed to Shopify checkout
   const checkout = (checkoutUrl) => {
-    const url =
+    const rawUrl =
       typeof checkoutUrl === "string" ? checkoutUrl : cart?.checkoutUrl;
+    const url = normalizeCheckoutUrl(rawUrl);
     if (url) {
       window.location.assign(url);
       return true;
